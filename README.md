@@ -10,3 +10,4 @@
 
 - https://docs.scala-lang.org/scala3
 - https://zio.dev
+- https://www.scala-sbt.org
