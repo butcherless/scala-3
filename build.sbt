@@ -29,7 +29,9 @@ lazy val commonSettings = Seq(
 )
 
 lazy val pills = (project in file("pills"))
+  .configs(IntegrationTest)
   .settings(
+    Defaults.itSettings,
     libraryDependencies ++= Seq(
       zio, zioPrelude,zioLogging,
       scalaTest
