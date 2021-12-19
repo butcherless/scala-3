@@ -1,0 +1,33 @@
+name: Scala CI
+
+on: [push]
+
+jobs:
+
+  scala3:
+
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Scala and Java
+      uses: olafurpg/setup-scala@v13
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    - name: init
+      run: sbt -v --client update 
+      working-directory: ${{env.WORK_DIR}}
+    - name: compile main
+      run: sbt -v --client compile 
+      working-directory: ${{env.WORK_DIR}}
+    - name: compile unit tests
+      run: sbt -v --client Test/compile
+      working-directory: ${{env.WORK_DIR}}
+    - name: tests
+      run: sbt -v --client test
+      working-directory: ${{env.WORK_DIR}}
+    - name: assembly
+      run: sbt -v --client assembly
+      working-directory: ${{env.WORK_DIR}}

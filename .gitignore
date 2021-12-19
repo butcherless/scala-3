@@ -1,2 +1,15 @@
-*.class
-*.log
+.DS_Store
+.bloop
+.bsp
+.gradle
+.idea
+.metals/
+.sbtopts
+.vscode/
+bin/
+build/
+out/
+target/
+*.iml
+**/metals.sbt
+**/project/project/

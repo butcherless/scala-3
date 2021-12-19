@@ -1,0 +1,14 @@
+{
+  "automerge": true,
+  "automergeType": "pr",
+  "dependencyDashboard": true,
+  "labels": [
+    "type: dependencies"
+  ],
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "after 7pm"
+  ]
+}
