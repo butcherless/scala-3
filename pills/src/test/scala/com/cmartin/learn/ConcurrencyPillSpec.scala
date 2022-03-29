@@ -25,7 +25,7 @@ class ConcurrencyPillSpec
   it should "return a tuple of delay values" in {
     val processOne = "procOne"
     val processTwo = "procTwo"
-    val program = doProcess(processOne)(100) zip doProcess(processTwo)(200)
+    val program    = doProcess(processOne)(100) zip doProcess(processTwo)(200)
 
     val result = runtime.unsafeRun(program)
     info(s"result: $result")
@@ -36,7 +36,7 @@ class ConcurrencyPillSpec
   it should "return the first conpleted, all succeed" in {
     val processOne = "procOne"
     val processTwo = "procTwo"
-    val program = doProcess(processOne)(100) race doProcess(processTwo)(200)
+    val program    = doProcess(processOne)(100) race doProcess(processTwo)(200)
 
     val result = runtime.unsafeRun(program)
     info(s"result: $result")
@@ -47,7 +47,7 @@ class ConcurrencyPillSpec
   it should "return the first completed, some failed" in {
     val processOne = "procOne"
     val processTwo = "procTwo"
-    val program = doFailProcess(processOne)(100) race doProcess(processTwo)(200)
+    val program    = doFailProcess(processOne)(100) race doProcess(processTwo)(200)
 
     val result = runtime.unsafeRun(program)
     info(s"result: $result")

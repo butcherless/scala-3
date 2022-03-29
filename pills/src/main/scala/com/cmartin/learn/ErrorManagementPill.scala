@@ -1,6 +1,7 @@
 package com.cmartin.learn
 
-import zio.{IO, ZIO}
+import zio.IO
+import zio.ZIO
 
 object ErrorManagementPill {
 
@@ -31,15 +32,15 @@ object ErrorManagementPill {
       ): IO[AdapterError, String] = {
         val program: IO[Any, String] = for {
           createRequest <- AdapterValidator.validatePost(postReq)
-          task <- service.create(createRequest)
+          task          <- service.create(createRequest)
         } yield task.toString
 
         program.mapError {
           case ValidationError.MissingName(m) =>
             AdapterError.BadRequest(m)
-          case ServiceError.CreateError(m) =>
+          case ServiceError.CreateError(m)    =>
             AdapterError.Conflict(m)
-          case _ => AdapterError.ServerError("unexpected error")
+          case _                              => AdapterError.ServerError("unexpected error")
         }
       }
     }
@@ -98,7 +99,7 @@ object ErrorManagementPill {
         createReq.task.definition match {
           case "error-duplicate" =>
             IO.fail(ServiceError.CreateError("duplicate-task"))
-          case _ => IO.succeed(createReq.task)
+          case _                 => IO.succeed(createReq.task)
         }
     }
 

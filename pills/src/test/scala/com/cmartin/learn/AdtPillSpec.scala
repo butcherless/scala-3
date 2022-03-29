@@ -9,7 +9,7 @@ class AdtPillSpec extends AnyFlatSpec with Matchers {
   behavior of "AdtPill"
 
   it should "match a BadRequest error" in {
-    val message = "missing id"
+    val message                      = "missing id"
     val responseError: ResponseError = BadRequest(message)
 
     val result = responseError match {

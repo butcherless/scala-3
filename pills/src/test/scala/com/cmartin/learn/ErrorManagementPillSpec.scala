@@ -11,7 +11,7 @@ class ErrorManagementPillSpec extends AnyFlatSpec with Matchers {
   val runtime = Runtime.default
 
   val taskService = ServiceLayer.TaskServiceImpl()
-  val taskApi = AdapterLayer.TaskApiImpl(taskService)
+  val taskApi     = AdapterLayer.TaskApiImpl(taskService)
 
   "Create" should "create a Task" in {
 
