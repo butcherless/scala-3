@@ -3,7 +3,7 @@ package com.cmartin.learn
 import com.cmartin.learn.ConcurrencyPill.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import zio.Runtime.default as runtime
+
 import zio.ZIO
 
 class ConcurrencyPillSpec
@@ -16,7 +16,7 @@ class ConcurrencyPillSpec
     val process = "procOne"
     val program = doProcess(process)(100)
 
-    val result = runtime.unsafeRun(program)
+    val result = Utils.runtime.unsafeRun(program)
     info(s"result: $result")
 
     result shouldBe process
@@ -27,7 +27,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doProcess(processOne)(100) zip doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = Utils.runtime.unsafeRun(program)
     info(s"result: $result")
 
     result shouldBe (processOne, processTwo)
@@ -38,7 +38,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doProcess(processOne)(100) race doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = Utils.runtime.unsafeRun(program)
     info(s"result: $result")
 
     result shouldBe processOne
@@ -49,7 +49,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doFailProcess(processOne)(100) race doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = Utils.runtime.unsafeRun(program)
     info(s"result: $result")
 
     result shouldBe processTwo
@@ -59,7 +59,7 @@ class ConcurrencyPillSpec
     val process = "procOne"
     val program = doFailProcess(process)(200) race doFailProcess("procTwo")(100)
 
-    val result = runtime.unsafeRun(program.either)
+    val result = Utils.runtime.unsafeRun(program.either)
     info(s"result: $result")
 
     result shouldBe Left(DomainError.ProcessingError(process))

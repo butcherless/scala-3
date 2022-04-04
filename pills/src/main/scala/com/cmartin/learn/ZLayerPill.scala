@@ -5,11 +5,6 @@ import org.slf4j.LoggerFactory
 import zio.*
 import zio.internal.stacktracer.Tracer
 
-/* ZLayer useful operators:
-   - '>+>'
-   - '>>>'
-   - '++'
- */
 object ZLayerPill {
 
   // domain names
@@ -42,7 +37,7 @@ object ZLayerPill {
 
     object MyServiceLive extends (() => MyService) {
       val layer: ULayer[MyService] =
-        MyServiceLive.toLayer
+        UIO.succeed(MyServiceLive()).toLayer
     }
   }
 
@@ -74,7 +69,7 @@ object ZLayerPill {
 
     object MyCountryRepositoryLive extends (() => MyCountryRepository) {
       val layer: ULayer[MyCountryRepository] =
-        MyCountryRepositoryLive.toLayer
+        UIO.succeed(MyCountryRepositoryLive()).toLayer
     }
 
     case class MyAirportRepositoryLive()
@@ -90,7 +85,7 @@ object ZLayerPill {
     }
     object MyAirportRepositoryLive extends (() => MyAirportRepository) {
       val layer: ULayer[MyAirportRepository] =
-        MyAirportRepositoryLive.toLayer
+        UIO.succeed(MyAirportRepositoryLive()).toLayer
     }
 
     object Services {
@@ -125,7 +120,10 @@ object ZLayerPill {
 
       object MyCountryServiceLive {
         val layer: URLayer[MyCountryRepository, MyCountryService] =
-          (MyCountryServiceLive(_)).toLayer
+          ZLayer(
+            ZIO.service[MyCountryRepository]
+              .map(MyCountryServiceLive(_))
+          )
       }
 
       case class MyAirportServiceLive(countryRepository: MyCountryRepository, airportRepository: MyAirportRepository)
@@ -144,13 +142,16 @@ object ZLayerPill {
 
       object MyAirportServiceLive {
         val layer: URLayer[MyCountryRepository with MyAirportRepository, MyAirportService] =
-          (MyAirportServiceLive(_, _)).toLayer
+          (for {
+            c <- ZIO.service[MyCountryRepository]
+            a <- ZIO.service[MyAirportRepository]
+          } yield MyAirportServiceLive(c, a)).toLayer
       }
     }
 
     /* common infrastructure */
     // val loggingEnv =    Slf4jLogger.make((_, message) => message)
-    val runtime: Runtime[ZEnv] = zio.Runtime.default
+    val runtime = zio.Runtime.default
 
     /* module use */
     object CountryRepositoryUse {
