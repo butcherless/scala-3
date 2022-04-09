@@ -33,6 +33,7 @@ lazy val pills = (project in file("pills"))
   .settings(
     Defaults.itSettings,
     libraryDependencies ++= Seq(
+      logback,
       zio,
       zioPrelude,
       zioLogging,
