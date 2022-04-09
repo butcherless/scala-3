@@ -1,7 +1,7 @@
 package com.cmartin.learn
 
-import zio._
 import com.cmartin.learn.ConcurrencyPill.DomainError
+import zio._
 
 object ConcurrencyPill {
   enum DomainError:
@@ -9,7 +9,7 @@ object ConcurrencyPill {
   // case E2(message: String)
 
   def doProcess(text: String)(delay: Int) =
-    ZIO.effect(text)
+    ZIO.attempt(text)
       .delay(delay.milliseconds)
 
   def doFailProcess(text: String)(delay: Int) =

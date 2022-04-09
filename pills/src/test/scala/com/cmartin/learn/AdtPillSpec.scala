@@ -6,6 +6,7 @@ import AdtPill.ResponseError
 import AdtPill.ResponseError.*
 
 class AdtPillSpec extends AnyFlatSpec with Matchers {
+
   behavior of "AdtPill"
 
   it should "match a BadRequest error" in {

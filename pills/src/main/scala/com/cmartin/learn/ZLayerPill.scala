@@ -35,9 +35,9 @@ object ZLayerPill {
       override def f1(): IO[String, Int] = IO.succeed(0)
     }
 
-    object MyServiceLive extends (() => MyService) {
+    object MyServiceLive {
       val layer: ULayer[MyService] =
-        UIO.succeed(MyServiceLive()).toLayer
+        ZLayer.fromFunction(_ => MyServiceLive())
     }
   }
 
@@ -67,9 +67,9 @@ object ZLayerPill {
       }
     }
 
-    object MyCountryRepositoryLive extends (() => MyCountryRepository) {
+    object MyCountryRepositoryLive {
       val layer: ULayer[MyCountryRepository] =
-        UIO.succeed(MyCountryRepositoryLive()).toLayer
+        ZLayer.fromFunction(_ => MyCountryRepositoryLive())
     }
 
     case class MyAirportRepositoryLive()
@@ -83,9 +83,9 @@ object ZLayerPill {
       }
 
     }
-    object MyAirportRepositoryLive extends (() => MyAirportRepository) {
+    object MyAirportRepositoryLive {
       val layer: ULayer[MyAirportRepository] =
-        UIO.succeed(MyAirportRepositoryLive()).toLayer
+        ZLayer.fromFunction(_ => MyAirportRepositoryLive())
     }
 
     object Services {
@@ -142,10 +142,12 @@ object ZLayerPill {
 
       object MyAirportServiceLive {
         val layer: URLayer[MyCountryRepository with MyAirportRepository, MyAirportService] =
-          (for {
-            c <- ZIO.service[MyCountryRepository]
-            a <- ZIO.service[MyAirportRepository]
-          } yield MyAirportServiceLive(c, a)).toLayer
+          ZLayer {
+            for {
+              c <- ZIO.service[MyCountryRepository]
+              a <- ZIO.service[MyAirportRepository]
+            } yield MyAirportServiceLive(c, a)
+          }
       }
     }
 
