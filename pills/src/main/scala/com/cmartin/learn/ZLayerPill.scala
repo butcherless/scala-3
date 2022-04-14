@@ -37,7 +37,7 @@ object ZLayerPill {
 
     object MyServiceLive {
       val layer: ULayer[MyService] =
-        ZLayer.fromFunction(_ => MyServiceLive())
+        ZLayer.succeed(MyServiceLive())
     }
   }
 
@@ -69,7 +69,7 @@ object ZLayerPill {
 
     object MyCountryRepositoryLive {
       val layer: ULayer[MyCountryRepository] =
-        ZLayer.fromFunction(_ => MyCountryRepositoryLive())
+        ZLayer.succeed(MyCountryRepositoryLive())
     }
 
     case class MyAirportRepositoryLive()
@@ -85,7 +85,7 @@ object ZLayerPill {
     }
     object MyAirportRepositoryLive {
       val layer: ULayer[MyAirportRepository] =
-        ZLayer.fromFunction(_ => MyAirportRepositoryLive())
+        ZLayer.succeed(MyAirportRepositoryLive())
     }
 
     object Services {
@@ -120,10 +120,7 @@ object ZLayerPill {
 
       object MyCountryServiceLive {
         val layer: URLayer[MyCountryRepository, MyCountryService] =
-          ZLayer(
-            ZIO.service[MyCountryRepository]
-              .map(MyCountryServiceLive(_))
-          )
+          ZLayer.fromFunction(repo => MyCountryServiceLive(repo))
       }
 
       case class MyAirportServiceLive(countryRepository: MyCountryRepository, airportRepository: MyAirportRepository)
@@ -144,9 +141,9 @@ object ZLayerPill {
         val layer: URLayer[MyCountryRepository with MyAirportRepository, MyAirportService] =
           ZLayer {
             for {
-              c <- ZIO.service[MyCountryRepository]
-              a <- ZIO.service[MyAirportRepository]
-            } yield MyAirportServiceLive(c, a)
+              cr <- ZIO.service[MyCountryRepository]
+              ar <- ZIO.service[MyAirportRepository]
+            } yield MyAirportServiceLive(cr, ar)
           }
       }
     }
