@@ -44,8 +44,8 @@ object ServiceAccessorPill {
     import Model.*
     import Model.ServiceError.*
     import Model.DatabaseError.*
-
     import RepositoryDefinitionModule.CountryRepository
+
     trait CountryService:
       def searchByCode(code: String): IO[ServiceError, Country]
 
