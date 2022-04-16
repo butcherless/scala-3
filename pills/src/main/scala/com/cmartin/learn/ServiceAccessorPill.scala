@@ -1,5 +1,8 @@
 package com.cmartin.learn
 
+import com.cmartin.learn.ServiceAccessorPill.Model.Country
+import com.cmartin.learn.ServiceAccessorPill.Model.ServiceError
+import com.cmartin.learn.ServiceAccessorPill.ServiceDefinitionModule.CountryService
 import zio.*
 
 object ServiceAccessorPill {
@@ -17,8 +20,12 @@ object ServiceAccessorPill {
     )
 
     enum DatabaseError:
-      case FieldMappingError(message: String)
+      case DatabaseObjectNotFound(message: String)
       case DefaultDatabaseError(message: String)
+
+    enum ServiceError:
+      case ResourceNotFound(message: String)
+      case DefaultServiceError(message: String)
 
   object RepositoryDefinitionModule:
     import Model.*
@@ -35,24 +42,32 @@ object ServiceAccessorPill {
 
   object ServiceDefinitionModule:
     import Model.*
+    import Model.ServiceError.*
+    import Model.DatabaseError.*
 
     import RepositoryDefinitionModule.CountryRepository
     trait CountryService:
-      def searchByCode(code: String): IO[String, Country]
+      def searchByCode(code: String): IO[ServiceError, Country]
 
     case class Neo4jCountryService(repo: CountryRepository)
         extends CountryService:
 
-      override def searchByCode(code: String): IO[String, Country] =
+      override def searchByCode(code: String): IO[ServiceError, Country] =
         for {
-          country <- repo.findByCode(code).mapError(_.toString())
+          country <- repo.findByCode(code).mapError(Neo4jCountryService.manageError)
         } yield country
 
     object Neo4jCountryService:
       val live: URLayer[CountryRepository, CountryService] =
         ZLayer.fromFunction(repo => Neo4jCountryService(repo))
 
-      def searchByCode(code: String) =
+      def searchByCode(code: String): ZIO[CountryService, ServiceError, Country] =
         ZIO.serviceWithZIO[CountryService](_.searchByCode(code))
+
+      def manageError(dbError: DatabaseError): ServiceError =
+        dbError match {
+          case DatabaseObjectNotFound(m) => ResourceNotFound(m)
+          case DefaultDatabaseError(m)   => DefaultServiceError(m)
+        }
 
 }

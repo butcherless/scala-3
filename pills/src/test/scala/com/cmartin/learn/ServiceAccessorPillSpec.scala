@@ -16,8 +16,8 @@ class ServiceAccessorPillSpec
 
   behavior of "ServiceAccessorPill"
 
-  val expectedCountry = Country("CountryName", "es")
-  val countyCode      = "es"
+  val expectedCountry: Country = Country("CountryName", "es")
+  val countryCode: String      = "es"
 
   val env = ZLayer.make[CountryRepository & CountryService](
     Neo4jCountryRepository.live,
@@ -28,7 +28,7 @@ class ServiceAccessorPillSpec
     val program =
       (for {
         srv     <- ZIO.service[CountryService]
-        country <- srv.searchByCode(countyCode)
+        country <- srv.searchByCode(countryCode)
       } yield country)
         .provide(env)
 
@@ -40,7 +40,7 @@ class ServiceAccessorPillSpec
   it should "access to the service via accessor helper" in {
     val program =
       (for {
-        country <- Neo4jCountryService.searchByCode(countyCode)
+        country <- Neo4jCountryService.searchByCode(countryCode)
       } yield country)
         .provide(env)
 
@@ -52,7 +52,7 @@ class ServiceAccessorPillSpec
   it should "access to the repository via Accessible macro" in {
     val program =
       (for {
-        country <- Neo4jCountryRepository(_.findByCode(countyCode))
+        country <- Neo4jCountryRepository(_.findByCode(countryCode))
       } yield country)
         .provide(env)
 
