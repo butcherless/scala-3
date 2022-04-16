@@ -47,24 +47,22 @@ object ZLayerPill {
     case class MyCountryRepositoryLive()
         extends MyCountryRepository {
 
-      override def existsByCode(code: CountryCode): IO[MyError, Boolean] = {
+      override def existsByCode(code: CountryCode): IO[MyError, Boolean] =
         for {
           _      <- ZIO.logDebug(s"existsByCode: $code")
           exists <- UIO.succeed(true) // simulation
         } yield exists
-      }
 
-      override def insert(country: Country): IO[MyError, Long]                 = {
+      override def insert(country: Country): IO[MyError, Long] =
         for {
           _  <- ZIO.logDebug(s"insert: $country")
           id <- IO.succeed(1L)
         } yield id
-      }
-      override def findByCode(code: CountryCode): IO[MyError, Option[Country]] = {
+
+      override def findByCode(code: CountryCode): IO[MyError, Option[Country]] =
         for {
           _ <- ZIO.logDebug(s"findByCode: $code")
         } yield Some(Country(code, s"Country-name-for-$code"))
-      }
     }
 
     object MyCountryRepositoryLive {
@@ -75,12 +73,11 @@ object ZLayerPill {
     case class MyAirportRepositoryLive()
         extends MyAirportRepository {
 
-      override def insert(airport: Airport): IO[MyError, Long] = {
+      override def insert(airport: Airport): IO[MyError, Long] =
         for {
           _  <- ZIO.logDebug(s"insert: $airport")
           id <- IO.succeed(1L)
         } yield id
-      }
 
     }
     object MyAirportRepositoryLive {
@@ -109,12 +106,11 @@ object ZLayerPill {
       case class MyCountryServiceLive(countryRepository: MyCountryRepository)
           extends MyCountryService {
 
-        override def create(country: Country): IO[MyError, Country] = {
+        override def create(country: Country): IO[MyError, Country] =
           for {
             _ <- ZIO.logDebug(s"create: $country")
             _ <- countryRepository.insert(country)
           } yield country
-        }
 
       }
 
@@ -126,7 +122,7 @@ object ZLayerPill {
       case class MyAirportServiceLive(countryRepository: MyCountryRepository, airportRepository: MyAirportRepository)
           extends MyAirportService {
 
-        override def create(airport: Airport): IO[MyError, Airport] = {
+        override def create(airport: Airport): IO[MyError, Airport] =
           for {
             _ <- ZIO.logDebug(s"create: $airport")
             _ <- ZIO.ifZIO(countryRepository.existsByCode(airport.country.code))(
@@ -134,7 +130,6 @@ object ZLayerPill {
                    IO.fail(s"Country not found for code: ${airport.country.code}")
                  )
           } yield airport
-        }
       }
 
       object MyAirportServiceLive {
@@ -225,10 +220,11 @@ object ZLayerPill {
           ZLayer.Debug.mermaid
         )
 
-      val fullProgram: ZIO[MyAirportService with MyCountryService, MyError, Unit] = for {
-        x1 <- MyCountryService(_.create(country))
-        x2 <- MyAirportService(_.create(airport))
-      } yield ()
+      val fullProgram: ZIO[MyAirportService with MyCountryService, MyError, Unit] =
+        for {
+          x1 <- MyCountryService(_.create(country))
+          x2 <- MyAirportService(_.create(airport))
+        } yield ()
 
       val fullResult: Unit = runtime.unsafeRun(
         fullProgram.provide(applicationLayer)
