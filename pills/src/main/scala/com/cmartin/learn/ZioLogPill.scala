@@ -6,7 +6,7 @@ import zio.logging.backend.SLF4J
 import zio.logging.LogAnnotation
 
 object ZioLogPill
-    extends ZIOAppDefault {
+    extends ZIOAppDefault:
 
   val logAspect: RuntimeConfigAspect     =
     SLF4J.slf4j(
@@ -18,9 +18,8 @@ object ZioLogPill
     RuntimeConfigAspect(_ => runtime.runtimeConfig.copy(logger = ZLogger.none)) >>> logAspect
 
   override def run =
-    for {
+    for
       _ <- ZIO.logDebug("this is a DEBUG level trace")
       _ <- ZIO.logInfo("this is an INFO level trace") @@ ZIOAspect.annotated(("a", "b"))
       _ <- ZIO.logError("this is an ERROR level trace")
-    } yield ()
-}
+    yield ()

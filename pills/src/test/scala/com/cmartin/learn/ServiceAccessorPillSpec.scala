@@ -26,10 +26,10 @@ class ServiceAccessorPillSpec
 
   it should "access to the service via zio accessor" in {
     val program =
-      (for {
+      (for
         srv     <- ZIO.service[CountryService]
         country <- srv.searchByCode(countryCode)
-      } yield country)
+      yield country)
         .provide(env)
 
     val country: Country = runtime.unsafeRun(program)
@@ -39,9 +39,9 @@ class ServiceAccessorPillSpec
 
   it should "access to the service via accessor helper" in {
     val program =
-      (for {
+      (for
         country <- Neo4jCountryService.searchByCode(countryCode)
-      } yield country)
+      yield country)
         .provide(env)
 
     val country: Country = runtime.unsafeRun(program)
@@ -51,9 +51,9 @@ class ServiceAccessorPillSpec
 
   it should "access to the repository via Accessible macro" in {
     val program =
-      (for {
+      (for
         country <- Neo4jCountryRepository(_.findByCode(countryCode))
-      } yield country)
+      yield country)
         .provide(env)
 
     val country: Country = runtime.unsafeRun(program)

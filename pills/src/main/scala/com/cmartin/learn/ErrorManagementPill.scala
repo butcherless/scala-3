@@ -3,37 +3,35 @@ package com.cmartin.learn
 import zio.IO
 import zio.ZIO
 
-object ErrorManagementPill {
+object ErrorManagementPill:
 
-  object DomainLayer {
+  object DomainLayer:
     case class Task(name: String, definition: String)
-  }
 
-  object AdapterLayer {
+  object AdapterLayer:
     import DomainLayer._
     import ServiceLayer._
     import AdapterValidator._
     import ServiceLayer.CreateRequest
 
-    enum AdapterError {
+    enum AdapterError:
       case BadRequest(message: String)
       case NotFound(message: String)
       case Conflict(message: String)
       case ServerError(message: String)
-    }
 
-    trait TaskApi {
+    trait TaskApi:
       def doPost(postReq: Map[String, String]): IO[AdapterError, String]
-    }
 
-    class TaskApiImpl(service: ServiceLayer.TaskService) extends TaskApi {
+    class TaskApiImpl(service: ServiceLayer.TaskService) extends TaskApi:
       override def doPost(
           postReq: Map[String, String]
-      ): IO[AdapterError, String] = {
-        val program: IO[Any, String] = for {
-          createRequest <- AdapterValidator.validatePost(postReq)
-          task          <- service.create(createRequest)
-        } yield task.toString
+      ): IO[AdapterError, String] =
+        val program: IO[Any, String] =
+          for
+            createRequest <- AdapterValidator.validatePost(postReq)
+            task          <- service.create(createRequest)
+          yield task.toString
 
         program.mapError {
           case ValidationError.MissingName(m) =>
@@ -42,90 +40,66 @@ object ErrorManagementPill {
             AdapterError.Conflict(m)
           case _                              => AdapterError.ServerError("unexpected error")
         }
-      }
-    }
 
-    object TaskApiImpl {
+    object TaskApiImpl:
       def apply(service: ServiceLayer.TaskService): TaskApiImpl =
         new TaskApiImpl(service)
-    }
 
-    object AdapterValidator {
+    object AdapterValidator:
 
       import AdapterError._
 
-      enum ValidationError {
+      enum ValidationError:
         case MissingName(message: String)
         case InvalidOwner(message: String)
         case InvalidDefinition(message: String)
-      }
 
       def validatePost(
           request: Map[String, String]
-      ): IO[ValidationError, CreateRequest] = {
+      ): IO[ValidationError, CreateRequest] =
         val name = request.getOrElse("name", "")
-        if (name.nonEmpty) {
+        if (name.nonEmpty)
           IO.succeed(
-            CreateRequest(
-              request("owner"),
-              Task(request("name"), request("def"))
-            )
+            CreateRequest(request("owner"), Task(request("name"), request("def")))
           )
-        } else {
+        else
           IO.fail(ValidationError.MissingName("missing name"))
-        }
-      }
-    }
-  }
 
-  object ServiceLayer {
+  object ServiceLayer:
     import DomainLayer._
     case class CreateRequest(owner: String, task: Task)
 
-    enum ServiceError {
+    enum ServiceError:
       case CreateError(message: String)
       case UpdateError(message: String)
       case DeleteError(message: String)
       case UnexpectedError(message: String)
-    }
 
-    trait TaskService {
+    trait TaskService:
       def create(createReq: CreateRequest): IO[ServiceError, Task]
-    }
 
     // TODO repository dependency
-    class TaskServiceImpl extends TaskService {
+    class TaskServiceImpl extends TaskService:
       override def create(createReq: CreateRequest): IO[ServiceError, Task] =
-        createReq.task.definition match {
+        createReq.task.definition match
           case "error-duplicate" =>
             IO.fail(ServiceError.CreateError("duplicate-task"))
           case _                 => IO.succeed(createReq.task)
-        }
-    }
 
-    object TaskServiceImpl {
+    object TaskServiceImpl:
       def apply(): TaskServiceImpl =
         new TaskServiceImpl()
-    }
 
-  }
-
-  object RepositoryLayer {
+  object RepositoryLayer:
     enum RepositoryError:
       case MissingEntity(message: String, throwable: Option[Throwable])
       case DuplicateEntity(message: String, throwable: Option[Throwable])
       case UnexpectedError(message: String, throwable: Option[Throwable])
-  }
 
-  object DatabaseLayer {
-    trait DatabaseService {
+  object DatabaseLayer:
+    trait DatabaseService:
       def insert[A](a: A): Long
-    }
 
     // TODO
-    class DatabaseServiceImpl extends DatabaseService {
+    class DatabaseServiceImpl extends DatabaseService:
       override def insert[A](a: A): Long = a.hashCode.toLong
-    }
-  }
-
-}

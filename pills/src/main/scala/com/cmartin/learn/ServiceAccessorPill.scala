@@ -5,7 +5,7 @@ import com.cmartin.learn.ServiceAccessorPill.Model.ServiceError
 import com.cmartin.learn.ServiceAccessorPill.ServiceDefinitionModule.CountryService
 import zio.*
 
-object ServiceAccessorPill {
+object ServiceAccessorPill:
 
   object Model:
     /** Country object
@@ -53,9 +53,9 @@ object ServiceAccessorPill {
         extends CountryService:
 
       override def searchByCode(code: String): IO[ServiceError, Country] =
-        for {
+        for
           country <- repo.findByCode(code).mapError(Neo4jCountryService.manageError)
-        } yield country
+        yield country
 
     object Neo4jCountryService:
       val live: URLayer[CountryRepository, CountryService] =
@@ -65,9 +65,6 @@ object ServiceAccessorPill {
         ZIO.serviceWithZIO[CountryService](_.searchByCode(code))
 
       def manageError(dbError: DatabaseError): ServiceError =
-        dbError match {
+        dbError match
           case DatabaseObjectNotFound(m) => ResourceNotFound(m)
           case DefaultDatabaseError(m)   => DefaultServiceError(m)
-        }
-
-}

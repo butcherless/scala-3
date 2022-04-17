@@ -5,8 +5,8 @@ import zio.prelude.Validation
 
 import scala.util.matching.Regex
 
-object ValidationPill {
-  object AccountModel {
+object ValidationPill:
+  object AccountModel:
     val EMPTY_IBAN_CONTROL_MSG  = "IBAN control is empty"
     val EMPTY_BANK_CODE_MSG     = "Bank code is empty"
     val EMPTY_BRANCH_CODE_MSG   = "Branch code is empty"
@@ -60,9 +60,8 @@ object ValidationPill {
         control: NumberControl,
         number: AccountNumber
     )
-  }
 
-  object AccountValidator {
+  object AccountValidator:
     import AccountModel.ValidationError.*
     import AccountModel.*
 
@@ -81,7 +80,7 @@ object ValidationPill {
        ibanControl            |--> [ValidationError,BankAccount]
      */
     def validate(view: BankAccountView): Validation[ValidationError, BankAccount] =
-      for {
+      for
         bankBranchNumber <- Validation.validate(
                               validateBankCode(view.bank),
                               validateBranchCode(view.branch),
@@ -89,23 +88,23 @@ object ValidationPill {
                             )
         numberControl    <- validateNumberControl(view.control, view.number)
         ibanControl      <- validateIbanControl(view.ibanControl)
-      } yield BankAccount(ibanControl, bankBranchNumber._1, bankBranchNumber._2, numberControl, bankBranchNumber._3)
+      yield BankAccount(ibanControl, bankBranchNumber._1, bankBranchNumber._2, numberControl, bankBranchNumber._3)
 
     private def validateNumberControl(
         control: NumberControl,
         number: AccountNumber
     ): Validation[ValidationError, NumberControl] =
-      for {
+      for
         nec <- validateEmptyText(control, EmptyControlError())
         fnc <- validateNumberControlFormat(NumberControl(nec))
         nc  <- validateControlValue(fnc, number)
-      } yield nc
+      yield nc
 
     private def validateIbanControl(control: IbanControl): Validation[ValidationError, IbanControl] =
-      for {
+      for
         nep <- validateEmptyText(control, EmptyIbanControlError())
         p   <- validateIbanControlFormat(IbanControl(nep))
-      } yield p
+      yield p
 
     private def validateIbanControlFormat(control: IbanControl): Validation[ValidationError, IbanControl] =
       Validation
@@ -115,10 +114,10 @@ object ValidationPill {
      B A N K
      */
     private def validateBankCode(code: BankCode): Validation[ValidationError, BankCode] =
-      for {
+      for
         neb <- validateEmptyText(code, EmptyBankError())
         b   <- validateBankFormat(BankCode(neb))
-      } yield b
+      yield b
 
     private def validateBankFormat(code: BankCode): Validation[ValidationError, BankCode] =
       Validation
@@ -128,10 +127,10 @@ object ValidationPill {
      B R A N C H
      */
     private def validateBranchCode(branch: BranchCode): Validation[ValidationError, BranchCode] =
-      for {
+      for
         neb <- validateEmptyText(branch, EmptyBranchError())
         b   <- validateBranchFormat(BranchCode(neb))
-      } yield b
+      yield b
 
     private def validateBranchFormat(code: BranchCode): Validation[ValidationError, BranchCode] =
       Validation
@@ -148,7 +147,7 @@ object ValidationPill {
         control: NumberControl,
         number: AccountNumber
     ): Validation[ValidationError, NumberControl] =
-      for {
+      for
         // common to number control and iban control
         calculated <- Validation.succeed(calcControlDigit(number)) zipPar
                         Validation.succeed(calcControlDigit(number.reverse)) map {
@@ -156,7 +155,7 @@ object ValidationPill {
                         }
         validated  <- Validation
                         .fromPredicateWith(InvalidNumberControl(calculated))(control)(_ == calculated)
-      } yield validated
+      yield validated
 
     // dummy digit control
     private def calcControlDigit(number: String): Int =
@@ -166,10 +165,10 @@ object ValidationPill {
     N U M B E R
      */
     private def validateNumber(number: AccountNumber): Validation[ValidationError, AccountNumber] =
-      for {
+      for
         nen <- validateEmptyText(number, EmptyNumberError())
         n   <- validateNumberFormat(AccountNumber(nen))
-      } yield n
+      yield n
 
     private def validateNumberFormat(number: AccountNumber): Validation[ValidationError, AccountNumber] =
       Validation
@@ -183,6 +182,3 @@ object ValidationPill {
     private def validateEmptyText(text: String, error: ValidationError): Validation[ValidationError, String] =
       Validation
         .fromPredicateWith(error)(text)(_.nonEmpty)
-
-  }
-}
