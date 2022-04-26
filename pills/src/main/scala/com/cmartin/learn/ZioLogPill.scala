@@ -1,9 +1,8 @@
 package com.cmartin.learn
 
 import zio.*
-import zio.logging.LogFormat
+import zio.logging.{LogAnnotation, LogFormat}
 import zio.logging.backend.SLF4J
-import zio.logging.LogAnnotation
 
 object ZioLogPill
     extends ZIOAppDefault:

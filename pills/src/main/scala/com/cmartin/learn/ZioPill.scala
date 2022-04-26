@@ -1,22 +1,15 @@
 package com.cmartin.learn
 
-import zio.IO
-import zio.Runtime
-import zio.Task
-import zio.ULayer
-import zio.ZIO
-import zio.ZLayer
+import zio.{IO, Runtime, Task, ULayer, ZIO, ZLayer}
 
-import java.time.Instant
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 
-object ZioPill {
+object ZioPill:
   val runtime = Runtime.default
 
-  sealed trait BaseError {
+  sealed trait BaseError:
     val message: String
-  }
 
   sealed trait RepositoryError extends BaseError
 
@@ -112,4 +105,3 @@ object ZioPill {
     findAddressByMessageId(UUID.randomUUID)
       .provideLayer(messageAddressLayer)
    */
-}

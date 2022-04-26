@@ -1,7 +1,6 @@
 package com.cmartin.learn
 
-import zio.IO
-import zio.ZIO
+import zio.{IO, ZIO}
 
 object ErrorManagementPill:
 
@@ -9,10 +8,9 @@ object ErrorManagementPill:
     case class Task(name: String, definition: String)
 
   object AdapterLayer:
-    import DomainLayer._
-    import ServiceLayer._
-    import AdapterValidator._
-    import ServiceLayer.CreateRequest
+    import AdapterValidator.*
+    import DomainLayer.*
+    import ServiceLayer.*
 
     enum AdapterError:
       case BadRequest(message: String)
@@ -47,7 +45,7 @@ object ErrorManagementPill:
 
     object AdapterValidator:
 
-      import AdapterError._
+      import AdapterError.*
 
       enum ValidationError:
         case MissingName(message: String)
@@ -66,7 +64,7 @@ object ErrorManagementPill:
           IO.fail(ValidationError.MissingName("missing name"))
 
   object ServiceLayer:
-    import DomainLayer._
+    import DomainLayer.*
     case class CreateRequest(owner: String, task: Task)
 
     enum ServiceError:

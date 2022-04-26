@@ -1,6 +1,6 @@
 package com.cmartin.learn
 
-object ExtensionMethodPill {
+object ExtensionMethodPill:
 
   case class Country(code: Int, name: String)
 
@@ -10,5 +10,3 @@ object ExtensionMethodPill {
     def toView: CountryView =
       CountryView(c.code.toString, c.name.toUpperCase)
   }
-
-}

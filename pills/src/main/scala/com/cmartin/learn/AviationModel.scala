@@ -4,12 +4,11 @@ import zio.prelude.Subtype
 
 import java.time.LocalDate
 
-object AviationModel {
+object AviationModel:
 
   // TODO move to domain
-  trait ProgramError {
+  trait ProgramError:
     val message: String
-  }
 
   sealed trait ServiceError extends ProgramError
   trait RepositoryError     extends ProgramError
@@ -46,4 +45,3 @@ object AviationModel {
       foundationDate: LocalDate,
       country: Country
   )
-}

@@ -1,7 +1,6 @@
 package com.cmartin.learn
 
-import zio.prelude.Subtype
-import zio.prelude.Validation
+import zio.prelude.{Subtype, Validation}
 
 import scala.util.matching.Regex
 
@@ -62,8 +61,8 @@ object ValidationPill:
     )
 
   object AccountValidator:
-    import AccountModel.ValidationError.*
     import AccountModel.*
+    import AccountModel.ValidationError.*
 
     val IBAN_CONTROL_REGEX: Regex   = """^[A-Z]{2}[0-9]{2}$""".r
     val BANK_CODE_REGEX: Regex      = """^[0-9]{4}$""".r

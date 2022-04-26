@@ -1,9 +1,9 @@
 package com.cmartin.learn
 
 import com.cmartin.learn.ConcurrencyPill.DomainError
-import zio._
+import zio.*
 
-object ConcurrencyPill {
+object ConcurrencyPill:
   enum DomainError:
     case ProcessingError(message: String)
   // case E2(message: String)
@@ -15,5 +15,3 @@ object ConcurrencyPill {
   def doFailProcess(text: String)(delay: Int) =
     ZIO.fail(DomainError.ProcessingError(text))
       .delay(delay.milliseconds)
-
-}

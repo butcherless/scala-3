@@ -1,7 +1,6 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.ServiceAccessorPill.Model.Country
-import com.cmartin.learn.ServiceAccessorPill.Model.ServiceError
+import com.cmartin.learn.ServiceAccessorPill.Model.{Country, ServiceError}
 import com.cmartin.learn.ServiceAccessorPill.ServiceDefinitionModule.CountryService
 import zio.*
 
@@ -42,8 +41,8 @@ object ServiceAccessorPill:
 
   object ServiceDefinitionModule:
     import Model.*
-    import Model.ServiceError.*
     import Model.DatabaseError.*
+    import Model.ServiceError.*
     import RepositoryDefinitionModule.CountryRepository
 
     trait CountryService:
