@@ -49,16 +49,4 @@ class ServiceAccessorPillSpec
     country shouldBe expectedCountry
   }
 
-  it should "access to the repository via Accessible macro" in {
-    val program =
-      (for
-        country <- Neo4jCountryRepository.findByCode(countryCode)
-      yield country)
-        .provide(env)
-
-    val country: Country = runtime.unsafeRun(program)
-
-    country shouldBe expectedCountry
-  }
-
 }

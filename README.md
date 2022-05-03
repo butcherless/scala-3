@@ -56,13 +56,6 @@
    ```
    [Type B example](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L43)
 
-   - Type C - Accesible macro
-   ```scala
-      object Neo4jCountryService extends Accessible[CountryService] // companion object
-      ...
-      country <- Neo4jCountryService(_.searchByCode(countyCode)) // program
-   ```
-   [Type C example](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L55)
 
 ## Links
 
