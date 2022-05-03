@@ -52,7 +52,7 @@ class ServiceAccessorPillSpec
   it should "access to the repository via Accessible macro" in {
     val program =
       (for
-        country <- Neo4jCountryRepository(_.findByCode(countryCode))
+        country <- Neo4jCountryRepository.findByCode(countryCode)
       yield country)
         .provide(env)
 

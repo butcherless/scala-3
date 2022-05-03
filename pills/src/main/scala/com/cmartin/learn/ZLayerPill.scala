@@ -4,6 +4,8 @@ import com.cmartin.learn.AviationModel.*
 import org.slf4j.LoggerFactory
 import zio.*
 import zio.internal.stacktracer.Tracer
+import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.MyAirportService
+import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.MyCountryService
 
 object ZLayerPill:
 
@@ -19,19 +21,21 @@ object ZLayerPill:
       def findByCode(code: CountryCode): IO[MyError, Option[Country]]
       def existsByCode(code: CountryCode): IO[MyError, Boolean]
 
-    object MyCountryRepository extends Accessible[MyCountryRepository]
+    object MyCountryRepository:
+      def insert(country: Country): ZIO[MyCountryRepository, MyError, Long] =
+        ZIO.serviceWithZIO[MyCountryRepository](_.insert(country))
 
     trait MyAirportRepository:
       def insert(airport: Airport): IO[MyError, Long]
 
-    object MyAirportRepository extends Accessible[MyAirportRepository]
+    object MyAirportRepository
 
   object SimpleLayer:
     trait MyService:
       def f1(): IO[String, Int]
 
     case class MyServiceLive() extends MyService:
-      override def f1(): IO[String, Int] = IO.succeed(0)
+      override def f1(): IO[String, Int] = ZIO.succeed(0)
 
     object MyServiceLive:
       val layer: ULayer[MyService] =
@@ -46,13 +50,13 @@ object ZLayerPill:
       override def existsByCode(code: CountryCode): IO[MyError, Boolean] =
         for
           _      <- ZIO.logDebug(s"existsByCode: $code")
-          exists <- UIO.succeed(true) // simulation
+          exists <- ZIO.succeed(true) // simulation
         yield exists
 
       override def insert(country: Country): IO[MyError, Long] =
         for
           _  <- ZIO.logDebug(s"insert: $country")
-          id <- IO.succeed(1L)
+          id <- ZIO.succeed(1L)
         yield id
 
       override def findByCode(code: CountryCode): IO[MyError, Option[Country]] =
@@ -70,7 +74,7 @@ object ZLayerPill:
       override def insert(airport: Airport): IO[MyError, Long] =
         for
           _  <- ZIO.logDebug(s"insert: $airport")
-          id <- IO.succeed(1L)
+          id <- ZIO.succeed(1L)
         yield id
 
     object MyAirportRepositoryLive:
@@ -81,12 +85,16 @@ object ZLayerPill:
       trait MyCountryService:
         def create(country: Country): IO[MyError, Country]
 
-      object MyCountryService extends Accessible[MyCountryService]
+      object MyCountryService:
+        def create(country: Country): ZIO[MyCountryService, String, Country] =
+          ZIO.serviceWithZIO[MyCountryService](_.create(country))
 
       trait MyAirportService:
         def create(airport: Airport): IO[MyError, Airport]
 
-      object MyAirportService extends Accessible[MyAirportService]
+      object MyAirportService:
+        def create(airport: Airport): ZIO[MyAirportService, String, Airport] =
+          ZIO.serviceWithZIO[MyAirportService](_.create(airport))
 
     object ServiceImplementations:
       import Repositories.*
@@ -113,7 +121,7 @@ object ZLayerPill:
             _ <- ZIO.logDebug(s"create: $airport")
             _ <- ZIO.ifZIO(countryRepository.existsByCode(airport.country.code))(
                    airportRepository.insert(airport),
-                   IO.fail(s"Country not found for code: ${airport.country.code}")
+                   ZIO.fail(s"Country not found for code: ${airport.country.code}")
                  )
           yield airport
 
@@ -145,7 +153,7 @@ object ZLayerPill:
 
       // insert computation 'has' a Repository dependency
       val repositoryProgram: ZIO[MyCountryRepository, String, Long] =
-        MyCountryRepository(_.insert(country))
+        MyCountryRepository.insert(country)
       // TODO remove macro error val repositoryResult = runtime.unsafeRun(
       //  repositoryProgram.provide(countryRepoEnv))
 
@@ -164,7 +172,7 @@ object ZLayerPill:
         MyCountryRepositoryLive.layer >>> MyCountryServiceLive.layer
 
       val serviceProgram: ZIO[MyCountryService, String, Country] =
-        MyCountryService(_.create(country))
+        MyCountryService.create(country)
       // TODO remove macro error val serviceResult: Country = runtime.unsafeRun(
       //  serviceProgram.provide(countryServEnv))
 
@@ -188,7 +196,7 @@ object ZLayerPill:
       val country: Country                                       = ???
       val airport: Airport                                       = ???
       val airportSrvProg: ZIO[MyAirportService, String, Airport] =
-        MyAirportService(_.create(airport))
+        MyAirportService.create(airport)
       // TODO remove macro error val airportSrvRes: Airport = runtime.unsafeRun(
       //  airportSrvProg.provide(airportServEnv))
 
@@ -203,8 +211,8 @@ object ZLayerPill:
 
       val fullProgram: ZIO[MyAirportService with MyCountryService, MyError, Unit] =
         for
-          x1 <- MyCountryService(_.create(country))
-          x2 <- MyAirportService(_.create(airport))
+          x1 <- MyCountryService.create(country)
+          x2 <- MyAirportService.create(airport)
         yield ()
 
       val fullResult: Unit = runtime.unsafeRun(

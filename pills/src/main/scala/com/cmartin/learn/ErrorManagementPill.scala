@@ -57,11 +57,11 @@ object ErrorManagementPill:
       ): IO[ValidationError, CreateRequest] =
         val name = request.getOrElse("name", "")
         if (name.nonEmpty)
-          IO.succeed(
+          ZIO.succeed(
             CreateRequest(request("owner"), Task(request("name"), request("def")))
           )
         else
-          IO.fail(ValidationError.MissingName("missing name"))
+          ZIO.fail(ValidationError.MissingName("missing name"))
 
   object ServiceLayer:
     import DomainLayer.*
@@ -81,8 +81,8 @@ object ErrorManagementPill:
       override def create(createReq: CreateRequest): IO[ServiceError, Task] =
         createReq.task.definition match
           case "error-duplicate" =>
-            IO.fail(ServiceError.CreateError("duplicate-task"))
-          case _                 => IO.succeed(createReq.task)
+            ZIO.fail(ServiceError.CreateError("duplicate-task"))
+          case _                 => ZIO.succeed(createReq.task)
 
     object TaskServiceImpl:
       def apply(): TaskServiceImpl =

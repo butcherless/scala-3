@@ -1,6 +1,7 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.ServiceAccessorPill.Model.{Country, ServiceError}
+import com.cmartin.learn.ServiceAccessorPill.Model.Country
+import com.cmartin.learn.ServiceAccessorPill.Model.ServiceError
 import com.cmartin.learn.ServiceAccessorPill.ServiceDefinitionModule.CountryService
 import zio.*
 
@@ -34,10 +35,13 @@ object ServiceAccessorPill:
 
     case class Neo4jCountryRepository() extends CountryRepository:
       override def findByCode(code: String): IO[DatabaseError, Country] =
-        IO.succeed(Country("CountryName", code))
+        ZIO.succeed(Country("CountryName", code))
 
-    object Neo4jCountryRepository extends Accessible[CountryRepository]:
+    object Neo4jCountryRepository:
       val live = ZLayer.succeed(Neo4jCountryRepository())
+
+      def findByCode(code: String) =
+        ZIO.serviceWithZIO[CountryRepository](_.findByCode(code))
 
   object ServiceDefinitionModule:
     import Model.*
