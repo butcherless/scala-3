@@ -16,7 +16,7 @@
    ```scala
       def searchByCode(code: String): IO[ServiceError, Country]
    ```
-   [Service trait](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L49)
+   [Service trait](https://github.com/butcherless/scala-3/blob/main/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L53)
 
 2. Service Implementation - Case Class
 
@@ -26,7 +26,7 @@
    ```scala
       case class Neo4jCountryService(repo: CountryRepository)
    ```
-   [Service implementation](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L52)
+   [Service implementation](https://github.com/butcherless/scala-3/blob/main/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L55)
 
 3. Dependency Injection - ZLayer in the companion object
 
@@ -35,7 +35,7 @@
    ```scala
       ZLayer.fromFunction(repo => Neo4jCountryService(repo))
    ```
-   [Service layer](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L62)
+   [Service layer](https://github.com/butcherless/scala-3/blob/main/pills/src/main/scala/com/cmartin/learn/ServiceAccessorPill.scala#L65)
 
 4. How to use it - Service accessors
 
@@ -45,7 +45,7 @@
         service <- ZIO.service[CountryService]
         ...
    ```
-   [Type A example](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L30)
+   [Type A example](https://github.com/butcherless/scala-3/blob/main/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L27)
 
    - Type B: Helper function in the companion object 
    ```scala
@@ -54,7 +54,7 @@
         ...
         country <- Neo4jCountryService.searchByCode(countyCode) // program
    ```
-   [Type B example](https://github.com/butcherless/scala-3/blob/ecdc362726fbec9665495b39d83328e2e7a6baf7/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L43)
+   [Type B example](https://github.com/butcherless/scala-3/blob/main/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L40)
 
 
 ## Links
