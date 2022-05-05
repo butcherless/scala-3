@@ -7,7 +7,7 @@ import OpaquePill.ObjectIdOT._
 import OpaquePill.DeviceNameOT._
 import OpaquePill.Device
 
-class OpaquePillSpec extends AnyFlatSpec with Matchers {
+class OpaquePillSpec extends AnyFlatSpec with Matchers:
 
   it should "give business semantics to a simple Long type" in {
     val cid  = CompanyId(7L)
@@ -20,4 +20,3 @@ class OpaquePillSpec extends AnyFlatSpec with Matchers {
     device.objectId.toLong shouldBe 11L
     device.name.toString shouldBe "TempChecker-123"
   }
-}

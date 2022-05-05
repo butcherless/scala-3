@@ -12,7 +12,7 @@ import ServiceAccessorPill.ServiceDefinitionModule.*
 
 class ServiceAccessorPillSpec
     extends AnyFlatSpec
-    with Matchers {
+    with Matchers:
 
   behavior of "ServiceAccessorPill"
 
@@ -48,5 +48,3 @@ class ServiceAccessorPillSpec
 
     country shouldBe expectedCountry
   }
-
-}

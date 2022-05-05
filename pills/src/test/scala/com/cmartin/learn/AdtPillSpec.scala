@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import AdtPill.ResponseError
 import AdtPill.ResponseError.*
 
-class AdtPillSpec extends AnyFlatSpec with Matchers {
+class AdtPillSpec extends AnyFlatSpec with Matchers:
 
   behavior of "AdtPill"
 
@@ -21,4 +21,3 @@ class AdtPillSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe message
   }
-}

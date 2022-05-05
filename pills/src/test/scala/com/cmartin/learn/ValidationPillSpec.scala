@@ -9,7 +9,7 @@ import zio.NonEmptyChunk
 
 class ValidationPillSpec
     extends AnyFlatSpec
-    with Matchers {
+    with Matchers:
 
   import ValidationPillSpec.*
 
@@ -81,9 +81,7 @@ class ValidationPillSpec
     result shouldBe invalidNumberErrors
   }
 
-}
-
-object ValidationPillSpec {
+object ValidationPillSpec:
   val validIbanControl: IbanControl   = IbanControl("ES83")
   val emptyIbanControl: IbanControl   = IbanControl("")
   val invalidIbanControl: IbanControl = IbanControl("ES1")
@@ -160,4 +158,3 @@ object ValidationPillSpec {
       invalidNumberError
     )
   )
-}
