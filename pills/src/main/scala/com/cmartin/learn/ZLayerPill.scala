@@ -4,8 +4,8 @@ import com.cmartin.learn.AviationModel.*
 import org.slf4j.LoggerFactory
 import zio.*
 import zio.internal.stacktracer.Tracer
-import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.MyAirportService
-import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.MyCountryService
+import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.*
+import zio.Runtime.{default => runtime}
 
 object ZLayerPill:
 
@@ -136,7 +136,6 @@ object ZLayerPill:
 
     /* common infrastructure */
     // val loggingEnv =    Slf4jLogger.make((_, message) => message)
-    val runtime = zio.Runtime.default
 
     /* module use */
     object CountryRepositoryUse:
@@ -168,8 +167,6 @@ object ZLayerPill:
      - requirement: Logging + Repository
      - output: Service Layer
        */
-      val countryServEnv =
-        MyCountryRepositoryLive.layer >>> MyCountryServiceLive.layer
 
       val serviceProgram: ZIO[MyCountryService, String, Country] =
         MyCountryService.create(country)
@@ -180,18 +177,6 @@ object ZLayerPill:
       import RepositoryImplementations.*
       import ServiceImplementations.*
       import Services.*
-
-      /* Repositories Layer
-     - requirement: Logging
-     - output: Logging + RepoA + RepoB Layer
-       */
-      // val repositoriesEnv = MyCountryRepositoryLive.layer ++ MyAirportRepositoryLive.layer
-
-      /* Service Layer
-     - requirement: Logging + RepoA + RepoB
-     - output: Service Layer
-       */
-      // val airportServEnv = repositoriesEnv >>> MyAirportServiceLive.layer
 
       val country: Country                                       = ???
       val airport: Airport                                       = ???
@@ -209,12 +194,12 @@ object ZLayerPill:
           ZLayer.Debug.mermaid
         )
 
-      val fullProgram: ZIO[MyAirportService with MyCountryService, MyError, Unit] =
+      val fullProgram =
         for
-          x1 <- MyCountryService.create(country)
-          x2 <- MyAirportService.create(airport)
-        yield ()
+          c <- MyCountryService.create(country)
+          a <- MyAirportService.create(airport)
+        yield (c, a)
 
-      val fullResult: Unit = runtime.unsafeRun(
+      val fullResult = runtime.unsafeRun(
         fullProgram.provide(applicationLayer)
       )
