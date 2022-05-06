@@ -13,7 +13,7 @@ object StmTMapPill:
 
   case class Country(code: String, name: String)
 
-  class InMemoryCountryRepository(map: TMap[String, Country]):
+  case class InMemoryCountryRepository(map: TMap[String, Country]):
 
     // [C]rud
     def add(key: String, value: Country): UIO[Unit] =

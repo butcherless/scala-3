@@ -74,4 +74,4 @@ object StmTMapPillSpec:
     TMap.make((key, value)).commit
 
   def buildRepository(map: TMap[String, Country]) =
-    ZIO.succeed(new StmTMapPill.InMemoryCountryRepository(map))
+    ZIO.succeed(StmTMapPill.InMemoryCountryRepository(map))
