@@ -11,9 +11,8 @@ object OpaquePill:
     object CompanyId:
       def apply(id: Long): CompanyId = id
 
-    extension (id: CompanyId) {
+    extension (id: CompanyId)
       def toLong: Long = id
-    }
 
   object ObjectIdOT:
     opaque type ObjectId = Long
@@ -21,9 +20,8 @@ object OpaquePill:
     object ObjectId:
       def apply(id: Long): ObjectId = id
 
-    extension (id: ObjectId) {
+    extension (id: ObjectId)
       def toLong: Long = id
-    }
 
   object DeviceNameOT:
     opaque type DeviceName = String
@@ -31,8 +29,7 @@ object OpaquePill:
     object DeviceName:
       def apply(name: String): DeviceName = name
 
-    extension (name: DeviceName) {
+    extension (name: DeviceName)
       def toString: String = name
-    }
 
   case class Device(companyId: CompanyId, objectId: ObjectId, name: DeviceName)

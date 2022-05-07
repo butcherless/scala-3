@@ -6,7 +6,6 @@ object ExtensionMethodPill:
 
   case class CountryView(code: String, name: String)
 
-  extension (c: Country) {
+  extension (c: Country)
     def toView: CountryView =
       CountryView(c.code.toString, c.name.toUpperCase)
-  }

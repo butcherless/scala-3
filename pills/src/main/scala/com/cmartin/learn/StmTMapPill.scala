@@ -3,6 +3,7 @@ package com.cmartin.learn
 import com.cmartin.learn.StmTMapPill.Country
 import zio.UIO
 import zio.ZIO
+import zio.ZLayer
 import zio.stm.STM
 import zio.stm.TMap
 import zio.stm.TRef
@@ -38,3 +39,15 @@ object StmTMapPill:
       for
         r <- map.updateWith(key)(_ => Some(value)).commit
       yield r
+
+    def size(): UIO[Int] =
+      for
+        r <- map.size.commit
+      yield r
+
+  object InMemoryCountryRepository:
+    val layer = ZLayer {
+      for
+        emtpyMap <- TMap.empty[String, Country].commit
+      yield InMemoryCountryRepository(emtpyMap)
+    }

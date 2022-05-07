@@ -40,8 +40,8 @@ object AviationModel:
 
   case class Airline(
       name: String,
-      iataCode: IataCode, // TODO AirlineIataCode
-      icaoCode: IcaoCode, // TODO AirlineIcaoCode
+      iataCode: IataCode, 
+      icaoCode: IcaoCode, 
       foundationDate: LocalDate,
       country: Country
   )
