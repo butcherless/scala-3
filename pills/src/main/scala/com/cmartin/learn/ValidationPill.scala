@@ -80,14 +80,15 @@ object ValidationPill:
      */
     def validate(view: BankAccountView): Validation[ValidationError, BankAccount] =
       for
-        bankBranchNumber <- Validation.validate(
-                              validateBankCode(view.bank),
-                              validateBranchCode(view.branch),
-                              validateNumber(view.number)
-                            )
-        numberControl    <- validateNumberControl(view.control, view.number)
-        ibanControl      <- validateIbanControl(view.ibanControl)
-      yield BankAccount(ibanControl, bankBranchNumber._1, bankBranchNumber._2, numberControl, bankBranchNumber._3)
+        bankBranchNumber      <- Validation.validate(
+                                   validateBankCode(view.bank),
+                                   validateBranchCode(view.branch),
+                                   validateNumber(view.number)
+                                 )
+        numberControl         <- validateNumberControl(view.control, view.number)
+        ibanControl           <- validateIbanControl(view.ibanControl)
+        (bank, branch, number) = bankBranchNumber
+      yield BankAccount(ibanControl, bank, branch, numberControl, number)
 
     private def validateNumberControl(
         control: NumberControl,
