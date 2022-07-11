@@ -5,6 +5,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import zio.Runtime.{default => runtime}
 import zio.ZIO
+import zio.Unsafe
+import Utils.runProgram
 
 class ConcurrencyPillSpec
     extends AnyFlatSpec
@@ -12,11 +14,13 @@ class ConcurrencyPillSpec
 
   behavior of "ConcurrencyPill"
 
+  // TODO definir funcion para refactorizar unsafe run (avoid duplication in tests)
+
   it should "return a delay value" in {
     val process = "procOne"
     val program = doProcess(process)(100)
 
-    val result = runtime.unsafeRun(program)
+    val result = runProgram(program)
     info(s"result: $result")
 
     result shouldBe process
@@ -27,7 +31,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doProcess(processOne)(100) zip doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = runProgram(program)
     info(s"result: $result")
 
     result shouldBe (processOne, processTwo)
@@ -38,7 +42,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doProcess(processOne)(100) race doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = runProgram(program)
     info(s"result: $result")
 
     result shouldBe processOne
@@ -49,7 +53,7 @@ class ConcurrencyPillSpec
     val processTwo = "procTwo"
     val program    = doFailProcess(processOne)(100) race doProcess(processTwo)(200)
 
-    val result = runtime.unsafeRun(program)
+    val result = runProgram(program)
     info(s"result: $result")
 
     result shouldBe processTwo
@@ -59,7 +63,7 @@ class ConcurrencyPillSpec
     val process = "procOne"
     val program = doFailProcess(process)(200) race doFailProcess("procTwo")(100)
 
-    val result = runtime.unsafeRun(program.either)
+    val result = runProgram(program.either)
     info(s"result: $result")
 
     result shouldBe Left(DomainError.ProcessingError(process))

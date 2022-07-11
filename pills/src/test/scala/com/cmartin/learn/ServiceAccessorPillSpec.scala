@@ -4,6 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import zio.Runtime.{default => runtime}
 import zio.*
+import Utils.runProgram
 
 import ServiceAccessorPill.*
 import ServiceAccessorPill.Model.*
@@ -32,7 +33,7 @@ class ServiceAccessorPillSpec
       yield country)
         .provide(env)
 
-    val country: Country = runtime.unsafeRun(program)
+    val country: Country = runProgram(program)
 
     country shouldBe expectedCountry
   }
@@ -44,7 +45,7 @@ class ServiceAccessorPillSpec
       yield country)
         .provide(env)
 
-    val country: Country = runtime.unsafeRun(program)
+    val country: Country = runProgram(program)
 
     country shouldBe expectedCountry
   }

@@ -7,6 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import zio.Runtime.{default => runtime}
 import zio._
 import zio.stm._
+import Utils.runProgram
 
 class StmTMapPillSpec extends AnyFlatSpec with Matchers:
   import StmTMapPillSpec.*
@@ -20,9 +21,9 @@ class StmTMapPillSpec extends AnyFlatSpec with Matchers:
         added <- repo.add(key1, country1)
       yield repo
 
-    val repo1 = runtime.unsafeRun(prog1)
+    val repo1 = runProgram(prog1)
 
-    val count1 = runtime.unsafeRun(repo1.size())
+    val count1 = runProgram(repo1.size())
 
     info(s"element count: ${count1}")
 
@@ -32,9 +33,9 @@ class StmTMapPillSpec extends AnyFlatSpec with Matchers:
         added <- repo.add(key2, country2)
       yield repo
 
-    val repo2 = runtime.unsafeRun(prog2)
+    val repo2 = runProgram(prog2)
 
-    val count2 = runtime.unsafeRun(repo1.size())
+    val count2 = runProgram(repo1.size())
 
     info(s"element count: ${count2}")
 
@@ -53,7 +54,7 @@ class StmTMapPillSpec extends AnyFlatSpec with Matchers:
       yield r
 
     // when
-    val result: Option[Country] = runtime.unsafeRun(program)
+    val result: Option[Country] = runProgram(program)
 
     // then
     result shouldBe Some(country1)
@@ -70,7 +71,7 @@ class StmTMapPillSpec extends AnyFlatSpec with Matchers:
       yield r
 
     // when
-    val result: Option[Country] = runtime.unsafeRun(program)
+    val result: Option[Country] = runProgram(program)
 
     // then
     result shouldBe None
@@ -87,7 +88,7 @@ class StmTMapPillSpec extends AnyFlatSpec with Matchers:
       yield r
 
     // when
-    val result: Option[Country] = runtime.unsafeRun(program)
+    val result: Option[Country] = runProgram(program)
 
     // then
     result shouldBe Some(country2)
@@ -112,4 +113,4 @@ object StmTMapPillSpec:
       _  <- ZIO.log("initializing in memory repository")
       r0 <- ZIO.service[InMemoryCountryRepository]
     yield r0
-  val myRepo        = runtime.unsafeRun(emptyRepoProg.provide(InMemoryCountryRepository.layer))
+  val myRepo        = runProgram(emptyRepoProg.provide(InMemoryCountryRepository.layer))

@@ -1,11 +1,11 @@
 package com.cmartin.learn
 
 import com.cmartin.learn.AviationModel.*
+import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.*
 import org.slf4j.LoggerFactory
+import zio.Runtime.{default => runtime}
 import zio.*
 import zio.internal.stacktracer.Tracer
-import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.*
-import zio.Runtime.{default => runtime}
 
 object ZLayerPill:
 
@@ -200,6 +200,8 @@ object ZLayerPill:
           a <- MyAirportService.create(airport)
         yield (c, a)
 
-      val fullResult = runtime.unsafeRun(
-        fullProgram.provide(applicationLayer)
-      )
+      val fullResult = Unsafe.unsafe {
+        runtime.unsafe.run(
+          fullProgram.provide(applicationLayer)
+        ).getOrThrowFiberFailure()
+      }
