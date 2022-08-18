@@ -10,16 +10,15 @@ import java.util.UUID
 object ZioLogPill
     extends ZIOAppDefault:
 
-  val logLayer =
-    SLF4J.slf4j(
-      logLevel = LogLevel.Debug,
-      format = LogFormat.line,
-      rootLoggerName = _ => "com.cmartin.learn"
-    )
+  val logger = Runtime.addLogger(
+    SLF4J.slf4jLogger(SLF4J.logFormatDefault, SLF4J.getLoggerName())
+  )
+
+  val loggerLayer = zio.Runtime.removeDefaultLoggers >>> logger
 
   val correlationIdAspect = ZIOAspect.annotated(("request-id", UUID.randomUUID.toString))
 
-  override val bootstrap = logLayer
+  override val bootstrap = loggerLayer
 
   def run =
     for
