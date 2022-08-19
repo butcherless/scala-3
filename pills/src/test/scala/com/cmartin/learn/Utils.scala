@@ -6,7 +6,7 @@ import zio.{Unsafe, ZIO}
 object Utils {
 // val runtime = Runtime.default
   def runProgram[E, A](program: ZIO[Any, E, A]) =
-    Unsafe.unsafe {
+    Unsafe.unsafe { implicit us =>
       runtime.unsafe.run(
         program
       ).getOrThrowFiberFailure()

@@ -200,7 +200,7 @@ object ZLayerPill:
           a <- MyAirportService.create(airport)
         yield (c, a)
 
-      val fullResult = Unsafe.unsafe {
+      val fullResult = Unsafe.unsafe { implicit us =>
         runtime.unsafe.run(
           fullProgram.provide(applicationLayer)
         ).getOrThrowFiberFailure()
