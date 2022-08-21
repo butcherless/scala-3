@@ -14,8 +14,8 @@ object ZioLogPill
   val correlationIdAspect = ZIOAspect.annotated(("request-id", UUID.randomUUID.toString))
 
   override val bootstrap = loggerLayer
-
-  def run =
+//
+  def run                =
     for
       _ <- ZIO.logDebug(s"this is a ${LogLevel.Debug.label} level trace")
       _ <- ZIO.logInfo(s"this is an ${LogLevel.Info.label} level trace")

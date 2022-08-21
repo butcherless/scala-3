@@ -39,8 +39,7 @@ lazy val pills = (project in file("pills"))
       zioLogging,
       scalaTest
     ),
-    coverageEnabled      := false,
-    Compile / run / fork := true
+    coverageEnabled := false
   )
 
 // clear screen and banner
