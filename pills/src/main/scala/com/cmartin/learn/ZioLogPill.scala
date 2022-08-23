@@ -1,7 +1,6 @@
 package com.cmartin.learn
 
 import zio.*
-import zio.logging.{LogAnnotation, LogFormat}
 import zio.logging.backend.SLF4J
 
 import java.util.UUID
@@ -9,15 +8,16 @@ import java.util.UUID
 object ZioLogPill
     extends ZIOAppDefault:
 
-  val loggerLayer = zio.Runtime.removeDefaultLoggers ++ SLF4J.slf4j
+  case class User(id: Long, name: String)
 
-  val correlationIdAspect = ZIOAspect.annotated(("request-id", UUID.randomUUID.toString))
+  val loggerLayer = Runtime.removeDefaultLoggers >>> SLF4J.slf4j
 
-  override val bootstrap = loggerLayer
-//
-  def run                =
-    for
-      _ <- ZIO.logDebug(s"this is a ${LogLevel.Debug.label} level trace")
-      _ <- ZIO.logInfo(s"this is an ${LogLevel.Info.label} level trace")
-      _ <- ZIO.logError(s"this is an ${LogLevel.Error.label} level trace")
-    yield ()
+  def getUser(): Task[User] =
+    ZIO.attempt(User(12345678L, "cmartin"))
+  def run                   =
+    (
+      for
+        user <- getUser()
+        _    <- ZIO.logDebug(s"this is an info log") @@ ZIOAspect.annotated("user", s"${user.id}")
+      yield ()
+    ).provide(loggerLayer)
