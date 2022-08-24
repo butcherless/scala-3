@@ -6,5 +6,5 @@ object Versions {
   val logback    = "1.2.11"
 
   // test
-  val scalatest = "3.2.13"
+  val scalatest = "3.3.0-SNAP2"
 }
