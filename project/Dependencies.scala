@@ -10,8 +10,6 @@ object Dependencies {
   lazy val zioLogging = "dev.zio" %% "zio-logging-slf4j" % Versions.zioLogging
   lazy val zioPrelude = "dev.zio" %% "zio-prelude"       % Versions.zioPrelude
 
-  lazy val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
-
   // testing code
   lazy val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalatest % Test
 }
