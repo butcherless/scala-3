@@ -43,7 +43,7 @@ object ValidationPill:
 
     // API model
     case class BankAccountView(
-        ibanControl: IbanControl,
+        iban: IbanControl,
         bank: BankCode,
         branch: BranchCode,
         control: NumberControl,
@@ -86,7 +86,7 @@ object ValidationPill:
                                    validateNumber(view.number)
                                  )
         numberControl         <- validateNumberControl(view.control, view.number)
-        ibanControl           <- validateIbanControl(view.ibanControl)
+        ibanControl           <- validateIbanControl(view.iban)
         (bank, branch, number) = bankBranchNumber
       yield BankAccount(ibanControl, bank, branch, numberControl, number)
 
