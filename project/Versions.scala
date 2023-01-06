@@ -5,5 +5,5 @@ object Versions {
   val zioPrelude = "1.0.0-RC16"
 
   // test
-  val scalatest = "3.2.14"
+  val scalatest = "3.2.15"
 }
