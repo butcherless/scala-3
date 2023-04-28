@@ -1,6 +1,7 @@
 package com.cmartin.learn
 
 import zio.prelude.Subtype
+import zio.IO
 
 import java.time.LocalDate
 
@@ -10,8 +11,10 @@ object AviationModel:
   trait ProgramError:
     val message: String
 
-  sealed trait ServiceError extends ProgramError
-  trait RepositoryError     extends ProgramError
+  sealed trait ServiceError     extends ProgramError
+  sealed trait ValidviceError   extends ProgramError
+  sealed trait InvalidviceError extends ProgramError
+  trait RepositoryError         extends ProgramError
 
   case class MissingEntityError(message: String)     extends ServiceError
   case class DuplicateEntityError(message: String)   extends ServiceError
@@ -45,3 +48,17 @@ object AviationModel:
       foundationDate: LocalDate,
       country: Country
   )
+
+  sealed trait DepMessage
+
+  enum ValidMessage extends DepMessage:
+    case Valid1
+    case Valid2
+
+  enum InvalidMessage extends DepMessage:
+    case Invalid1
+    case Invalid2
+
+  trait Pepe {
+    def f1(): IO[Int, DepMessage]
+  }

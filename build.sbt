@@ -36,6 +36,7 @@ lazy val pills = (project in file("pills"))
       zio,
       zioPrelude,
       zioLogging,
+      cats,
       scalaTest
     ),
     coverageEnabled := false
