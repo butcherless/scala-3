@@ -4,5 +4,4 @@ addSbtPlugin("org.scalameta"    % "sbt-scalafmt"           % "2.5.0")
 addSbtPlugin("org.scoverage"    % "sbt-coveralls"          % "1.3.8")
 addSbtPlugin("org.scoverage"    % "sbt-scoverage"          % "2.0.7")
 addSbtPlugin("ch.epfl.scala"    % "sbt-bloop"              % "1.5.6-61-e5171d3c")
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph"   % "0.10.0-RC1")
 addDependencyTreePlugin
