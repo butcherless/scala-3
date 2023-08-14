@@ -1,8 +1,8 @@
 package com.cmartin.learn
 
-import zio.{IO, Runtime, Task, ULayer, ZIO, ZLayer}
+import zio.Runtime
 
-import java.time.{Instant, LocalDateTime}
+import java.time.Instant
 import java.util.UUID
 
 object ZioPill:

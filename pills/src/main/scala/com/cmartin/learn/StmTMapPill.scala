@@ -1,14 +1,8 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.StmTMapPill.Country
 import zio.UIO
-import zio.ZIO
 import zio.ZLayer
-import zio.stm.STM
 import zio.stm.TMap
-import zio.stm.TRef
-import zio.stm.USTM
-import zio.stm.ZSTM
 
 object StmTMapPill:
 

@@ -2,7 +2,6 @@ package com.cmartin.learn
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import zio.Runtime.{default => runtime}
 import zio.*
 import Utils.runProgram
 

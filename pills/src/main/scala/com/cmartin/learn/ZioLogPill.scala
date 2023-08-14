@@ -3,8 +3,6 @@ package com.cmartin.learn
 import zio.*
 import zio.logging.backend.SLF4J
 
-import java.util.UUID
-
 object ZioLogPill
     extends ZIOAppDefault:
 

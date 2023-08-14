@@ -1,8 +1,6 @@
 package com.cmartin.learn
 
 import com.cmartin.learn.AviationModel.*
-import com.cmartin.learn.ZLayerPill.RepositoryImplementations.Services.*
-import org.slf4j.LoggerFactory
 import zio.Runtime.{default => runtime}
 import zio.*
 import zio.internal.stacktracer.Tracer
@@ -140,7 +138,6 @@ object ZLayerPill:
     /* module use */
     object CountryRepositoryUse:
       import Repositories.*
-      import RepositoryImplementations.*
 
       val country: Country = ???
       /* Repository Layer
@@ -157,8 +154,6 @@ object ZLayerPill:
       //  repositoryProgram.provide(countryRepoEnv))
 
     object CountryServiceUse:
-      import RepositoryImplementations.*
-      import ServiceImplementations.*
       import Services.*
 
       val country: Country = ???
@@ -174,7 +169,6 @@ object ZLayerPill:
       //  serviceProgram.provide(countryServEnv))
 
     object AirportServiceUse:
-      import RepositoryImplementations.*
       import ServiceImplementations.*
       import Services.*
 

@@ -1,12 +1,10 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.ConcurrencyPill.DomainError
 import zio.*
 
 object ConcurrencyPill:
   enum DomainError:
     case ProcessingError(message: String)
-  // case E2(message: String)
 
   def doProcess(text: String)(delay: Int) =
     ZIO.attempt(text)

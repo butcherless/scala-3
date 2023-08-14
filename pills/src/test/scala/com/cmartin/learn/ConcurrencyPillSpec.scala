@@ -3,9 +3,6 @@ package com.cmartin.learn
 import com.cmartin.learn.ConcurrencyPill.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import zio.Runtime.{default => runtime}
-import zio.ZIO
-import zio.Unsafe
 import Utils.runProgram
 
 class ConcurrencyPillSpec

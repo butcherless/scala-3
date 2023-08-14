@@ -15,23 +15,19 @@ lazy val basicScalacOptions = Seq(
   "-unchecked",
 //  "-language:postfixOps",
   "-language:higherKinds",
-  "-Wdead-code",
-  "-Wunused:imports",
-  "-Xlint:infer-any",
-  "-Xlint:unused"
+  "-Wunused:imports"
 )
 
 lazy val commonSettings = Seq(
-  libraryDependencies ++= Seq(scalaTest),
-  scalacOptions ++= basicScalacOptions
+  scalacOptions ++= basicScalacOptions,
+  libraryDependencies ++= Seq(scalaTest)
   // resolvers += // temporal for ZIO snapshots
   //  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
 )
 
 lazy val pills = (project in file("pills"))
-  .configs(IntegrationTest)
   .settings(
-    Defaults.itSettings,
+    commonSettings,
     libraryDependencies ++= Seq(
       zio,
       zioPrelude,
@@ -39,6 +35,16 @@ lazy val pills = (project in file("pills"))
       scalaTest
     ),
     coverageEnabled := false
+  )
+
+  lazy val `pills-int` = (project in file("pills-int"))
+  .dependsOn(pills)
+  .settings(
+    name           := "pills-int",
+    publish / skip := true,
+    commonSettings
+    // test dependencies
+    // libraryDependencies += something % Test,
   )
 
 // clear screen and banner

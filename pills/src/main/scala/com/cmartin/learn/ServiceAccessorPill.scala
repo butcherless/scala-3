@@ -1,8 +1,5 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.ServiceAccessorPill.Model.Country
-import com.cmartin.learn.ServiceAccessorPill.Model.ServiceError
-import com.cmartin.learn.ServiceAccessorPill.ServiceDefinitionModule.CountryService
 import zio.*
 
 object ServiceAccessorPill:
