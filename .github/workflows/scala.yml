@@ -15,9 +15,6 @@ jobs:
       uses: coursier/setup-action@v1
       with:
         jvm: zulu@20
-    - name: init
-      run: sbt -v --client update 
-      working-directory: ${{env.WORK_DIR}}
     - name: compile main
       run: sbt -v --client compile 
       working-directory: ${{env.WORK_DIR}}
