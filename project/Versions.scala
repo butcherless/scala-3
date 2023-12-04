@@ -1,7 +1,7 @@
 object Versions {
   // main
   val zio        = "2.0.19"
-  val zioLogging = "2.1.15"
+  val zioLogging = "2.1.16"
   val zioPrelude = "1.0.0-RC21"
 
   // test
