@@ -2,7 +2,7 @@ import Dependencies._
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / scalaVersion := "3.4.0"
+ThisBuild / scalaVersion := "3.4.1"
 ThisBuild / organization := "com.cmartin.learn"
 
 lazy val basicScalacOptions = Seq(
