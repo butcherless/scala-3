@@ -4,7 +4,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import ExtensionMethodPill.*
 
-class ExtensionMethodSpec extends AnyFlatSpec with Matchers:
+class ExtensionMethodSpec
+    extends AnyFlatSpec
+    with Matchers:
 
   behavior of "ExtensionMethod"
 

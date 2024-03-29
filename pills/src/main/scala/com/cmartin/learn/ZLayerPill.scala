@@ -124,7 +124,7 @@ object ZLayerPill:
           yield airport
 
       object MyAirportServiceLive:
-        val layer: URLayer[MyCountryRepository with MyAirportRepository, MyAirportService] =
+        val layer: URLayer[MyCountryRepository & MyAirportRepository, MyAirportService] =
           ZLayer {
             for
               cr <- ZIO.service[MyCountryRepository]
@@ -180,7 +180,7 @@ object ZLayerPill:
       //  airportSrvProg.provide(airportServEnv))
 
       val applicationLayer =
-        ZLayer.make[MyCountryRepository with MyAirportRepository with MyCountryService with MyAirportService](
+        ZLayer.make[MyCountryRepository & MyAirportRepository & MyCountryService & MyAirportService](
           MyCountryRepositoryLive.layer,
           MyAirportRepositoryLive.layer,
           MyCountryServiceLive.layer,

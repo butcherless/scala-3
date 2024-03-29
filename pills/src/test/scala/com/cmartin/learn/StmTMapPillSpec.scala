@@ -8,7 +8,9 @@ import zio._
 import zio.stm._
 import Utils.runProgram
 
-class StmTMapPillSpec extends AnyFlatSpec with Matchers:
+class StmTMapPillSpec
+    extends AnyFlatSpec
+    with Matchers:
   import StmTMapPillSpec.*
 
   behavior of "StmTMapPill"
