@@ -2,7 +2,7 @@ import Dependencies._
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-ThisBuild / scalaVersion := "3.4.2"
+ThisBuild / scalaVersion := Versions.scala
 ThisBuild / organization := "com.cmartin.learn"
 
 lazy val basicScalacOptions = Seq(
@@ -37,7 +37,7 @@ lazy val pills = (project in file("pills"))
     coverageEnabled := false
   )
 
-  lazy val `pills-int` = (project in file("pills-int"))
+lazy val `pills-int` = (project in file("pills-int"))
   .dependsOn(pills)
   .settings(
     name           := "pills-int",

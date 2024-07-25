@@ -1,4 +1,5 @@
 object Versions {
+  val scala      = "3.4.2"
   // main
   val zio        = "2.1.6"
   val zioLogging = "2.3.0"
