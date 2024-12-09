@@ -6,7 +6,7 @@
     "type: dependencies"
   ],
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "sbt": {
     "enabled": true
