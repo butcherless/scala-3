@@ -8,7 +8,7 @@ import zio.internal.stacktracer.Tracer
 object ZLayerPill:
 
   // domain names
-  type MyError = String
+  private type MyError = String
 
   // TODO add zio.logging.Logger or ZIO.2.x Logger
 
