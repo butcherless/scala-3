@@ -9,4 +9,10 @@ object Dependencies {
 
   // testing code
   lazy val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalatest % Test
+
+  lazy val zioTest: Seq[ModuleID] = Seq(
+    "dev.zio" %% "zio-test"          % Versions.zio % "test",
+    "dev.zio" %% "zio-test-sbt"      % Versions.zio % "test",
+    "dev.zio" %% "zio-test-magnolia" % Versions.zio % "test" // optional
+  )
 }

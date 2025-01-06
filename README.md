@@ -42,16 +42,18 @@
    ```scala
       for {
         service <- ZIO.service[CountryService]
-        ...
+        //...
    ```
    [Type A example](https://github.com/butcherless/scala-3/blob/main/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L27)
 
     - Type B: Helper function in the companion object
    ```scala
-      def searchByCode(code: String) =
+      def searchByCode(code: String) = 
         ZIO.serviceWithZIO[CountryService](_.searchByCode(code)) // companion object
-        ...
+        //...
         country <- Neo4jCountryService.searchByCode(countyCode) // program
+   }
+   
    ```
    [Type B example](https://github.com/butcherless/scala-3/blob/main/pills/src/test/scala/com/cmartin/learn/ServiceAccessorPillSpec.scala#L40)
 

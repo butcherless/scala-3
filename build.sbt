@@ -20,7 +20,8 @@ lazy val basicScalacOptions = Seq(
 
 lazy val commonSettings = Seq(
   scalacOptions ++= basicScalacOptions,
-  libraryDependencies ++= Seq(scalaTest)
+  libraryDependencies ++= Seq(scalaTest) ++ zioTest,
+  testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   // resolvers += // temporal for ZIO snapshots
   //  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
 )
@@ -31,8 +32,7 @@ lazy val pills = (project in file("pills"))
     libraryDependencies ++= Seq(
       zio,
       zioPrelude,
-      zioLogging,
-      scalaTest
+      zioLogging
     ),
     coverageEnabled := false
   )
