@@ -5,7 +5,6 @@ import org.scalatest.matchers.should.Matchers
 import zio.*
 import Utils.runProgram
 
-import ServiceAccessorPill.*
 import ServiceAccessorPill.Model.*
 import ServiceAccessorPill.RepositoryDefinitionModule.*
 import ServiceAccessorPill.ServiceDefinitionModule.*

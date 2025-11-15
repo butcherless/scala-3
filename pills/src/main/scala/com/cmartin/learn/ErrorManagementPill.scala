@@ -45,8 +45,6 @@ object ErrorManagementPill:
 
     object AdapterValidator:
 
-      import AdapterError.*
-
       enum ValidationError:
         case MissingName(message: String)
         case InvalidOwner(message: String)

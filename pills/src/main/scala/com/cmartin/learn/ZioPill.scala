@@ -6,7 +6,7 @@ import java.time.Instant
 import java.util.UUID
 
 object ZioPill:
-  val runtime = Runtime.default
+  val runtime: Runtime[Any] = Runtime.default
 
   sealed trait BaseError:
     val message: String

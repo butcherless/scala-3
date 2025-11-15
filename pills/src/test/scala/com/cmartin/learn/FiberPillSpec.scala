@@ -13,7 +13,7 @@ object FiberPillSpec extends ZIOSpecDefault:
       val input = FiberPill.ProcessInput(UUID.randomUUID(), "test")
       for {
         result <- FiberPill.process(input).fork
-        _ <- TestClock.adjust(MAX_DELAY_MILLIS.milliseconds)
+        _      <- TestClock.adjust(MAX_DELAY_MILLIS.milliseconds)
         result <- result.join
       } yield assertTrue(result == input.id)
     }
