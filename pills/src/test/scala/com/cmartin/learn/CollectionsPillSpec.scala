@@ -6,6 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.net.URI
 
+// word list file: https://github.com/JorgeDuenasLerin/diccionario-espanol-txt/blob/master/0_palabras_todas_no_conjugaciones.txt
 class CollectionsPillSpec
     extends AnyFlatSpec
     with Matchers:
