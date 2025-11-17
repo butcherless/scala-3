@@ -1,9 +1,10 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
 
   // ZIO and ecosystem
   lazy val zio        = "dev.zio" %% "zio"               % Versions.zio
+  lazy val zioStreams = "dev.zio" %% "zio-streams"       % Versions.zio
   lazy val zioLogging = "dev.zio" %% "zio-logging-slf4j" % Versions.zioLogging
   lazy val zioPrelude = "dev.zio" %% "zio-prelude"       % Versions.zioPrelude
 
