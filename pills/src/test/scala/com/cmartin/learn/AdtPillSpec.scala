@@ -15,11 +15,10 @@ class AdtPillSpec
     val message                      = "missing id"
     val responseError: ResponseError = BadRequest(message)
 
-    val result = responseError match {
+    val result = responseError match
       case BadRequest(m) => m
       case NotFound(m)   => m
       case Conflict(m)   => m
-    }
 
     result shouldBe message
   }

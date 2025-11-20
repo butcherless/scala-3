@@ -11,10 +11,10 @@ object FiberPillSpec extends ZIOSpecDefault:
   def spec = suite("FiberPillSpec")(
     test("process should return the same UUID as input") {
       val input = FiberPill.ProcessInput(UUID.randomUUID(), "test")
-      for {
+      for
         result <- FiberPill.process(input).fork
         _      <- TestClock.adjust(MAX_DELAY_MILLIS.milliseconds)
         result <- result.join
-      } yield assertTrue(result == input.id)
+      yield assertTrue(result == input.id)
     }
   )

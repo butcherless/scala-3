@@ -26,18 +26,16 @@ object ZioPill:
   case class UnknownError(message: String) extends BaseError
 
   def manageError(e: BaseError): String =
-    e match {
+    e match
       case MissingEntityError(_) => "missing"
       case NotFoundError(_)      => "not-found"
       case UnknownError(_)       => "unknown"
       case _                     => "default"
-    }
 
   def manageRepositoryError(e: RepositoryError): String =
-    e match {
+    e match
       case MissingEntityError(_)   => "missing"
       case DuplicateEntityError(_) => "duplicate"
-    }
 
   case class Location(
       lon: Double,

@@ -1,6 +1,6 @@
 package com.cmartin.learn
 
-object AdtPill {
+object AdtPill:
   enum ResponseError:
     case BadRequest(message: String)
     case NotFound(message: String)
@@ -11,4 +11,3 @@ object AdtPill {
     case InvalidVariable extends CommandResult(1)
     case ServiceError    extends CommandResult(2)
     case WebClientError  extends CommandResult(3)
-}
