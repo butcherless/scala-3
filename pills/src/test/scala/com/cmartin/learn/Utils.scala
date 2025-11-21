@@ -1,6 +1,6 @@
 package com.cmartin.learn
 
-import zio.Runtime.{default => runtime}
+import zio.Runtime.default as runtime
 import zio.{Unsafe, ZIO}
 
 object Utils:

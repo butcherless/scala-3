@@ -2,9 +2,9 @@ package com.cmartin.learn
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import OpaquePill.CompanyIdOT._
-import OpaquePill.ObjectIdOT._
-import OpaquePill.DeviceNameOT._
+import OpaquePill.CompanyIdOT.*
+import OpaquePill.ObjectIdOT.*
+import OpaquePill.DeviceNameOT.*
 import OpaquePill.Device
 
 class OpaquePillSpec

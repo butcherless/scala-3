@@ -4,8 +4,8 @@ import com.cmartin.learn.StmTMapPill.Country
 import com.cmartin.learn.StmTMapPill.InMemoryCountryRepository
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import zio._
-import zio.stm._
+import zio.*
+import zio.stm.*
 import Utils.runProgram
 
 class StmTMapPillSpec

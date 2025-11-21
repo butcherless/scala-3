@@ -54,7 +54,7 @@ object ErrorManagementPill:
           request: Map[String, String]
       ): IO[ValidationError, CreateRequest] =
         val name = request.getOrElse("name", "")
-        if (name.nonEmpty)
+        if name.nonEmpty then
           ZIO.succeed(
             CreateRequest(request("owner"), Task(request("name"), request("def")))
           )

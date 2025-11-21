@@ -1,7 +1,7 @@
 package com.cmartin.learn
 
 import com.cmartin.learn.AviationModel.*
-import zio.Runtime.{default => runtime}
+import zio.Runtime.default as runtime
 import zio.*
 import zio.internal.stacktracer.Tracer
 
