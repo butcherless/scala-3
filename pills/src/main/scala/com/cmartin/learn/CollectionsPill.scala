@@ -28,7 +28,7 @@ object CollectionsPill:
   def classify(uris: Seq[URI]): Map[String, Seq[URI]] =
     uris
       .map(matchUri)
-      .filter(_.isValid) // Keep only valid matches
+      .filter(_.isValid)       // Keep only valid matches
       .groupMap(_.name)(_.uri) // Classify by name, extracting URI
 
   // Match URI string against pattern and extract name from group(1)
