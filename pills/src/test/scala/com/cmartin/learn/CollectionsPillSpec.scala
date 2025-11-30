@@ -1,6 +1,6 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.CollectionsPill.classify
+import com.cmartin.learn.CollectionsPill.{UriType, classify}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -43,9 +43,9 @@ class CollectionsPillSpec
     val resultMap = classify(uris)
 
     resultMap.nonEmpty shouldBe true
-    resultMap("ALPHA").toSet shouldBe Set(alphaOneURI, alphaTwoURI)
-    resultMap("BRAVO").toSet shouldBe Set(bravoOneURI, bravoTwoURI)
-    resultMap("CHARLIE").toSet shouldBe Set(charlieOneURI)
+    resultMap(UriType.ALPHA).toSet shouldBe Set(alphaOneURI, alphaTwoURI)
+    resultMap(UriType.BRAVO).toSet shouldBe Set(bravoOneURI, bravoTwoURI)
+    resultMap(UriType.CHARLIE).toSet shouldBe Set(charlieOneURI)
 
     val classifiedUris = resultMap.values.flatten.toSeq
     classifiedUris.intersect(invalidUris) shouldBe empty

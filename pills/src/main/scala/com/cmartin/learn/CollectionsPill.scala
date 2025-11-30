@@ -6,17 +6,15 @@ import scala.util.matching.Regex
 object CollectionsPill:
 
   // Global set of valid names
-  private val VALID_NAMES: Set[String] = Set(
-    "ALPHA",
-    "BRAVO",
-    "CHARLIE"
-  )
+  enum UriType:
+    case ALPHA
+    case BRAVO
+    case CHARLIE
 
   // Regex pattern with groups to extract NAME and UUID
   private val URN_PATTERN: Regex = """^urn:([A-Z]+):([a-f0-9\-]{36})$""".r
 
-  private case class MatchResult(uri: URI, name: String = ""):
-    def isValid: Boolean = name.nonEmpty
+  private case class MatchResult(uri: URI, uriType: UriType)
 
   /** Classifies a list of URIs by their NAME component.
     *
@@ -25,16 +23,19 @@ object CollectionsPill:
     * @return
     *   Map where keys are NAMEs and values are Lists of URIs
     */
-  def classify(uris: Seq[URI]): Map[String, Seq[URI]] =
+  def classify(uris: Seq[URI]): Map[UriType, Seq[URI]] =
     uris
-      .map(matchUri)
-      .filter(_.isValid)       // Keep only valid matches
-      .groupMap(_.name)(_.uri) // Classify by name, extracting URI
+      .flatMap(matchUri)               // Keep only valid matches
+      .map(mr => (mr.uriType, mr.uri)) // Safe to call .get after isValid filter
+      .groupMap(_._1)(_._2)            // Classify by name, extracting URI
 
   // Match URI string against pattern and extract name from group(1)
-  private def matchUri(uri: URI): MatchResult =
+  private def matchUri(uri: URI): Option[MatchResult] =
     uri.toString match
-      case URN_PATTERN(name, uuid) if VALID_NAMES.contains(name) =>
-        MatchResult(uri, name)
-      case _                                                     =>
-        MatchResult(uri) // Invalid, name will be empty
+      case URN_PATTERN(name, uuid) if isValidType(name) =>
+        Some(MatchResult(uri, UriType.valueOf(name)))
+      case _                                            =>
+        None // Invalid, will be empty
+
+  private def isValidType(name: String): Boolean =
+    UriType.values.exists(_.toString == name)
