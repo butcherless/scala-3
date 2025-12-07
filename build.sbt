@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies.*
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -32,7 +32,9 @@ lazy val pills = (project in file("pills"))
     libraryDependencies ++= Seq(
       zio,
       zioPrelude,
-      zioLogging
+      zioLogging,
+      zioHttp,
+      zioJson
     ),
     coverageEnabled := false
   )
