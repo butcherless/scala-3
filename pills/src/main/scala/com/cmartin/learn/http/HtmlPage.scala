@@ -3,7 +3,7 @@ package com.cmartin.learn.http
 object HtmlPage:
 
   private val endpoint = "/api/sales/stream"
-  val index = s"""
+  val index            = s"""
     <!DOCTYPE html>
     <html>
     <head>
