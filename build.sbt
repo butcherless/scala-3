@@ -36,7 +36,8 @@ lazy val pills = (project in file("pills"))
       zioHttp,
       zioJson
     ),
-    coverageEnabled := false
+    coverageEnabled := false,
+    assemblyStrategy
   )
 
 lazy val `pills-int` = (project in file("pills-int"))
@@ -48,6 +49,16 @@ lazy val `pills-int` = (project in file("pills-int"))
     // test dependencies
     // libraryDependencies += something % Test,
   )
+
+lazy val assemblyStrategy = ThisBuild / assemblyMergeStrategy := {
+  // specific cases
+  case "META-INF/versions/11/module-info.class" => MergeStrategy.last
+  case "META-INF/io.netty.versions.properties" => MergeStrategy.last
+  // default case
+  case default =>
+    val oldStrategy = assemblyMergeStrategy.value
+    oldStrategy(default)
+}
 
 // clear screen and banner
 lazy val cls = taskKey[Unit]("Prints a separator")
