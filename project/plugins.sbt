@@ -3,7 +3,7 @@ addSbtPlugin("org.jmotor.sbt" % "sbt-dependency-updates" % "1.2.9")
 addSbtPlugin("org.scalameta"  % "sbt-scalafmt"           % "2.5.6")
 addSbtPlugin("org.scoverage"  % "sbt-coveralls"          % "1.3.15")
 addSbtPlugin("org.scoverage"  % "sbt-scoverage"          % "2.4.4")
-addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"              % "2.0.17")
+addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"              % "2.0.18")
 
 //
 addDependencyTreePlugin
