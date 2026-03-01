@@ -1,5 +1,6 @@
 package com.cmartin.learn.http
 
+// access to http://localhost:8080/ once the server is running
 object HtmlPage:
 
   private val endpoint = "/api/sales/stream"
