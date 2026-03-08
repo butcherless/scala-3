@@ -25,17 +25,16 @@ object CollectionsPill:
     */
   def classify(uris: Seq[URI]): Map[UriType, Seq[URI]] =
     uris
-      .flatMap(matchUri)               // Keep only valid matches
-      .map(mr => (mr.uriType, mr.uri)) // Safe to call .get after isValid filter
-      .groupMap(_._1)(_._2)            // Classify by name, extracting URI
+      .flatMap(matchUri)                    // Keep only valid matches
+      .groupMap(a => a.uriType)(a => a.uri) // Classify by type, extracting URI
 
-  // Match URI string against pattern and extract name from group(1)
+  // Match URI string against a pattern and extract name from group(1)
   private def matchUri(uri: URI): Option[MatchResult] =
     uri.toString match
       case URN_PATTERN(name, uuid) if isValidType(name) =>
         Some(MatchResult(uri, UriType.valueOf(name)))
       case _                                            =>
-        None // Invalid, will be empty
+        None // Invalid will be empty
 
   private def isValidType(name: String): Boolean =
     UriType.values.exists(_.toString == name)

@@ -21,7 +21,7 @@ class CollectionsPillSpec
   //
   val xrayURI: URI       = URI.create("urn:XRAY:d712e040-8e15-405e-964c-ec8158e9e29d") // Not in VALID_NAMES
   val yankeeURI: URI     = URI.create("https://example.com")                           // Wrong format
-  val zuluURI: URI       = URI.create("urn:ZULU:not-a-uuid")                           // Invalid UUID format
+  val zuluURI: URI       = URI.create("urn:ZULU:not-an-uuid")                          // Invalid UUID format
 
   it should "classify URIs by name" in {
     // given
