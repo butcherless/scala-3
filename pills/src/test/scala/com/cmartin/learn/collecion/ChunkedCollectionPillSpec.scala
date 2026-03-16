@@ -1,40 +1,17 @@
 package com.cmartin.learn.collecion
 
 import com.cmartin.learn.collection.ChunkedCollectionPill.*
-import com.cmartin.learn.collection.ChunkedCollectionPill.Color.{INDIGO, ORANGE, RED, YELLOW}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.net.URI
 import java.util.UUID
 
-// word list file: https://github.com/JorgeDuenasLerin/diccionario-espanol-txt/blob/master/0_palabras_todas_no_conjugaciones.txt
 class ChunkedCollectionPillSpec
     extends AnyFlatSpec
     with Matchers {
 
   behavior of "ChunkedCollectionPill"
-
-  // d91b8ece-ff18-491b-9c76-bd9231e25d1c
-  // 26f613c8-2df1-42ac-ade8-19ae774495ca
-  // 10f93893-04dd-416e-a957-ad3a37eff075
-  // 8e44b40c-3fdf-496f-bd49-38bca4889909
-  // 156882b9-abdb-4f68-a002-c0e7d0b7c93f
-  // 5422008a-38c9-4f63-801c-96b5082efa8e
-  // c850dceb-3d2f-4689-9ec2-afffafd0cee3
-  // d5c7c423-283c-43f4-a47f-6a6c365ec145
-  // 8fd16506-054f-4ee1-ac53-90ee8e44e024
-
-  // 17884315-002a-4cd6-9591-f9c1a1192a1a
-  // b29e1b0d-e936-4073-9ae7-5e19e91e73fb
-  // d5c9f026-aef5-4a89-9843-0b20662c9f8e
-  // ec21b093-c2bf-40f1-aee8-c4b6be2a9ea6
-  // 57c5980a-ed98-4bfd-845e-dd04fc2a95a9
-  // 35a0ca2c-4f0d-46c2-ae73-159c9f2ed843
-  // f4c2f680-e5ca-4590-87e5-2d3d39bdc027
-  // 69dd2205-c712-47f0-90f6-de8abab8f26f
-  // 55351828-f481-4ec3-a002-f932d8d0563c
-  // c38bc8e6-fe8b-4f9e-b691-000ee51f382c
 
   val redOneURI: URI   = URI.create("urn:RED:eb093186-52e3-4a5a-889f-eb5ae2988cc3")
   val redTwoURI: URI   = URI.create("urn:RED:26f613c8-2df1-42ac-ade8-19ae774495ca")
@@ -67,7 +44,7 @@ class ChunkedCollectionPillSpec
   val invalidURI      = URI.create("prefix:INVALID:12345678")
 
   it should "return true for valid name" in {
-    val result = hasValidName(RED.toString)
+    val result = hasValidName(Color.RED.toString)
 
     result shouldBe true
   }
@@ -78,7 +55,7 @@ class ChunkedCollectionPillSpec
 
   it should "match a valid color" in {
     // given
-    val expected = MatchResult(RED, redOneURI)
+    val expected = MatchResult(Color.RED, redOneURI)
     // when
     val result   = matchUri(redOneURI)
     // then
@@ -102,10 +79,10 @@ class ChunkedCollectionPillSpec
 
     // then
     resultMap.nonEmpty shouldBe true
-    resultMap(RED).toSet shouldBe redUris.toSet
-    resultMap(ORANGE).toSet shouldBe orangeUris.toSet
-    resultMap(YELLOW).toSet shouldBe yellowUris.toSet
-    resultMap(INDIGO).toSet shouldBe indigoUris.toSet
+    resultMap(Color.RED).toSet shouldBe redUris.toSet
+    resultMap(Color.ORANGE).toSet shouldBe orangeUris.toSet
+    resultMap(Color.YELLOW).toSet shouldBe yellowUris.toSet
+    resultMap(Color.INDIGO).toSet shouldBe indigoUris.toSet
   }
 
   it should "chunk each color list into sublists based on the typeLimitMap" in {
@@ -115,19 +92,20 @@ class ChunkedCollectionPillSpec
     // when
     val chunked: Map[Color, Seq[Seq[URI]]] = chunk(classified)
 
+    val r = groupByIndex(chunked)
+
     // then
+    chunked(Color.RED).size shouldBe 2
+    chunked(Color.RED).flatten.toSet shouldBe redUris.toSet
 
-    chunked(RED).size shouldBe 2
-    chunked(RED).flatten.toSet shouldBe redUris.toSet
+    chunked(Color.ORANGE).size shouldBe 1
+    chunked(Color.ORANGE).flatten.toSet shouldBe orangeUris.toSet
 
-    chunked(ORANGE).size shouldBe 1
-    chunked(ORANGE).flatten.toSet shouldBe orangeUris.toSet
+    chunked(Color.YELLOW).size shouldBe 1
+    chunked(Color.YELLOW).flatten.toSet shouldBe yellowUris.toSet
 
-    chunked(YELLOW).size shouldBe 1
-    chunked(YELLOW).flatten.toSet shouldBe yellowUris.toSet
-
-    chunked(INDIGO).size shouldBe 3
-    chunked(INDIGO).flatten.toSet shouldBe indigoUris.toSet
+    chunked(Color.INDIGO).size shouldBe 3
+    chunked(Color.INDIGO).flatten.toSet shouldBe indigoUris.toSet
 
     def generate(n: Int): Seq[UUID] =
       Seq.fill(n)(UUID.randomUUID())
@@ -135,6 +113,7 @@ class ChunkedCollectionPillSpec
 
   it should "generate UUIDs" in {
     // generate(10).foreach(println)
+
   }
 
 }

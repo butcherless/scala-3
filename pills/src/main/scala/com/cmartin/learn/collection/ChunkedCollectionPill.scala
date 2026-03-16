@@ -54,4 +54,19 @@ object ChunkedCollectionPill {
       val chunks = uris.grouped(limit).toSeq
       (color, chunks)
     }
+
+  // create a sequence of partitions with the i-th index element of each color partition from 1 to N,
+  // e.g., the first element of red plus the first element of orange,
+  //  the second element of red plus the second element of orange, etc.
+  // not all partitions will have the same size
+  def groupByIndex(chunkMap: Map[Color, Seq[Seq[URI]]]): Seq[Seq[URI]] =
+    val maxChunks = chunkMap.values.map(_.size).max
+    (0 until maxChunks).map { index =>
+      chunkMap
+        .values
+        .flatMap(chunks => chunks.lift(index))
+        .flatten
+        .toSeq
+    }
+
 }
