@@ -52,6 +52,8 @@ lazy val `pills-int` = (project in file("pills-int"))
 
 lazy val assemblyStrategy = ThisBuild / assemblyMergeStrategy := {
   // specific cases
+  case "META-INF/versions/9/OSGI-INF/MANIFEST.MF" => MergeStrategy.last
+  case "META-INF/versions/9/module-info.class" => MergeStrategy.last
   case "META-INF/versions/11/module-info.class" => MergeStrategy.last
   case "META-INF/io.netty.versions.properties" => MergeStrategy.last
   // default case
