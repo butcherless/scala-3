@@ -1,4 +1,4 @@
-package com.cmartin.learn.collecion
+package com.cmartin.learn.collection
 
 import com.cmartin.learn.collection.ChunkedCollectionPill.*
 import org.scalatest.flatspec.AnyFlatSpec
