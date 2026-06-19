@@ -36,7 +36,6 @@ lazy val pills = (project in file("pills"))
       zioHttp,
       zioJson
     ),
-    coverageEnabled := false,
     assemblyStrategy
   )
 
@@ -64,7 +63,7 @@ lazy val assemblyStrategy = ThisBuild / assemblyMergeStrategy := {
 
 // clear screen and banner
 lazy val cls = taskKey[Unit]("Prints a separator")
-cls := {
+LocalRootProject / cls := Def.uncached {
   val brs           = "\n".repeat(2)
   val message       = "BUILD BEGINS HERE"
   val spacedMessage = message.mkString("* ", " ", " *")
@@ -74,7 +73,7 @@ cls := {
   println(s"$chars$brs ")
 }
 
-addCommandAlias("xcoverage", "clean;coverage;test;coverageReport")
+addCommandAlias("xcoverage", "clean;coverage;testFull;coverageReport")
 addCommandAlias("xreload", "clean;reload")
 addCommandAlias("xstart", "clean;reStart")
 addCommandAlias("xstop", "reStop;clean")
