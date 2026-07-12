@@ -22,10 +22,10 @@ jobs:
       run: sbt -v --client compile 
       working-directory: ${{env.WORK_DIR}}
     - name: compile unit tests
-      run: sbt -v --client 'Test / compile'
+      run: sbt -v --client Test/compile
       working-directory: ${{env.WORK_DIR}}
     - name: tests
-      run: sbt -v --client testFull
+      run: sbt -v --client test
       working-directory: ${{env.WORK_DIR}}
     - name: formatting
       run: sbt -v --client scalafmtCheckAll
