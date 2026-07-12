@@ -1,9 +1,9 @@
 package com.cmartin.learn
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import AdtPill.ResponseError
 import AdtPill.ResponseError.*
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class AdtPillSpec
     extends AnyFlatSpec

@@ -1,8 +1,8 @@
 package com.cmartin.learn
 
-import zio.prelude.{Subtype, Validation}
-
 import scala.util.matching.Regex
+
+import zio.prelude.{Subtype, Validation}
 
 object ValidationPill:
   object AccountModel:

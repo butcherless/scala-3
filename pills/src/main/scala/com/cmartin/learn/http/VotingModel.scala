@@ -1,8 +1,8 @@
 package com.cmartin.learn.http
 
-import zio.{Console, Queue, Scope, UIO, URIO, ZIO, durationInt}
-
 import java.util.UUID
+
+import zio.{durationInt, Console, Queue, Scope, UIO, URIO, ZIO}
 
 /** https://es.wikipedia.org/wiki/Elecciones_generales_de_Espa%C3%B1a_de_2023
   */

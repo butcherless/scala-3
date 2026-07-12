@@ -1,11 +1,12 @@
 package com.cmartin.learn
 
-import zio.stream.{Stream, ZSink, ZStream}
-import zio.{Task, ZIO, ZIOAppDefault}
-
 import java.text.Normalizer
+
 import scala.collection.immutable.TreeSet
 import scala.io.Source
+
+import zio.{Task, ZIO, ZIOAppDefault}
+import zio.stream.{Stream, ZSink, ZStream}
 
 object StreamsPill
     extends ZIOAppDefault:

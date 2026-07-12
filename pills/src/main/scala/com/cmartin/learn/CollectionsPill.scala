@@ -1,6 +1,7 @@
 package com.cmartin.learn
 
 import java.net.URI
+
 import scala.util.matching.Regex
 
 object CollectionsPill:

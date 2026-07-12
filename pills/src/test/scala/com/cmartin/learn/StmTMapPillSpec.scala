@@ -1,12 +1,12 @@
 package com.cmartin.learn
 
+import Utils.runProgram
 import com.cmartin.learn.StmTMapPill.Country
 import com.cmartin.learn.StmTMapPill.InMemoryCountryRepository
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import zio.*
 import zio.stm.*
-import Utils.runProgram
 
 class StmTMapPillSpec
     extends AnyFlatSpec

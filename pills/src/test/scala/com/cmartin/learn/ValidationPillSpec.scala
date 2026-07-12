@@ -1,7 +1,7 @@
 package com.cmartin.learn
 
-import com.cmartin.learn.ValidationPill.AccountModel.ValidationError.*
 import com.cmartin.learn.ValidationPill.AccountModel.*
+import com.cmartin.learn.ValidationPill.AccountModel.ValidationError.*
 import com.cmartin.learn.ValidationPill.AccountValidator
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

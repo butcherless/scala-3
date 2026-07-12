@@ -1,13 +1,12 @@
 package com.cmartin.learn
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
-import zio.*
-import Utils.runProgram
-
 import ServiceAccessorPill.Model.*
 import ServiceAccessorPill.RepositoryDefinitionModule.*
 import ServiceAccessorPill.ServiceDefinitionModule.*
+import Utils.runProgram
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import zio.*
 
 class ServiceAccessorPillSpec
     extends AnyFlatSpec

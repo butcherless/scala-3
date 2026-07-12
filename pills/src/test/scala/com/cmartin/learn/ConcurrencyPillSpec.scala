@@ -1,9 +1,9 @@
 package com.cmartin.learn
 
+import Utils.runProgram
 import com.cmartin.learn.ConcurrencyPill.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import Utils.runProgram
 
 class ConcurrencyPillSpec
     extends AnyFlatSpec

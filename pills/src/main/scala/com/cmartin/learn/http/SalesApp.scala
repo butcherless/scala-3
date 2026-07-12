@@ -1,9 +1,9 @@
 package com.cmartin.learn.http
 
+import zio.{duration2DurationOps, durationInt, Clock, Random, Task, ZIO, ZIOAppDefault, ZLayer}
 import zio.http.*
 import zio.json.*
 import zio.stream.{Stream, ZStream}
-import zio.{Clock, Random, Task, ZIO, ZIOAppDefault, ZLayer, duration2DurationOps, durationInt}
 
 // access to http://localhost:8080/ once the server is running
 object SalesApp

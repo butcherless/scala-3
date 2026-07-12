@@ -1,8 +1,8 @@
 package com.cmartin.learn
 
+import ExtensionMethodPill.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import ExtensionMethodPill.*
 
 class ExtensionMethodSpec
     extends AnyFlatSpec

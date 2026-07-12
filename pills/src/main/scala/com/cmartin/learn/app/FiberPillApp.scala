@@ -1,9 +1,9 @@
 package com.cmartin.learn.app
 
+import java.util.UUID
+
 import com.cmartin.learn.FiberPill.*
 import zio.{UIO, ZIO, ZIOAppDefault}
-
-import java.util.UUID
 
 object FiberPillApp
     extends ZIOAppDefault:

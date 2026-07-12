@@ -1,11 +1,11 @@
 package com.cmartin.learn.collection
 
+import java.net.URI
+import java.util.UUID
+
 import com.cmartin.learn.collection.ChunkedCollectionPill.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-
-import java.net.URI
-import java.util.UUID
 
 class ChunkedCollectionPillSpec
     extends AnyFlatSpec

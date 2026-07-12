@@ -1,10 +1,10 @@
 package com.cmartin.learn
 
+import java.util.UUID
+
 import com.cmartin.learn.FiberPill.MAX_DELAY_MILLIS
 import zio.durationInt
 import zio.test.*
-
-import java.util.UUID
 
 object FiberPillSpec extends ZIOSpecDefault:
 

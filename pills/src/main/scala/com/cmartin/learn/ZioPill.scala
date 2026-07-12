@@ -1,9 +1,9 @@
 package com.cmartin.learn
 
-import zio.Runtime
-
 import java.time.Instant
 import java.util.UUID
+
+import zio.Runtime
 
 object ZioPill:
   val runtime: Runtime[Any] = Runtime.default

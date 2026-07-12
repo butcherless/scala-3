@@ -1,11 +1,11 @@
 package com.cmartin.learn
 
-import zio.UIO
+import java.util.UUID
+
 import zio.Random
+import zio.UIO
 import zio.ZIO
 import zio.durationInt
-
-import java.util.UUID
 
 object FiberPill:
   private val MIN_DELAY_MILLIS = 10

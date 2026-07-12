@@ -1,8 +1,8 @@
 package com.cmartin.learn
 
-import zio.prelude.Subtype
-
 import java.time.LocalDate
+
+import zio.prelude.Subtype
 
 object AviationModel:
 

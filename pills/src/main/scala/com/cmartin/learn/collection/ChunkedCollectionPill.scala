@@ -1,6 +1,7 @@
 package com.cmartin.learn.collection
 
 import java.net.URI
+
 import scala.util.matching.Regex
 
 object ChunkedCollectionPill {
