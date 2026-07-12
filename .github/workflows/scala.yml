@@ -19,20 +19,14 @@ jobs:
         cache: sbt
     - uses: sbt/setup-sbt@v1
     - name: compile main
-      run: sbt -v --client compile 
-      working-directory: ${{env.WORK_DIR}}
+      run: sbt -v --client compile
     - name: compile unit tests
       run: sbt -v --client Test/compile
-      working-directory: ${{env.WORK_DIR}}
     - name: tests
       run: sbt -v --client test
-      working-directory: ${{env.WORK_DIR}}
     - name: formatting
       run: sbt -v --client scalafmtCheckAll
-      working-directory: ${{env.WORK_DIR}}
     - name: assembly
       run: sbt -v --client assembly
-      working-directory: ${{env.WORK_DIR}}
     - name: coverage
       run: sbt -v --client xcoverage
-      working-directory: ${{env.WORK_DIR}}
