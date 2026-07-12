@@ -1,0 +1,97 @@
+//| mvnDeps: ["com.lihaoyi::mill-contrib-scoverage:$MILL_VERSION"]
+package build
+
+import mill.*
+import mill.scalalib.*
+import mill.scalalib.scalafmt.ScalafmtModule
+import mill.javalib.Assembly.*
+import mill.contrib.scoverage.ScoverageModule
+
+object Versions {
+  val scala      = "3.3.8"
+  // main
+  val zio        = "2.1.26"
+  val zioPrelude = "1.0.0-RC47"
+  val zioLogging = "2.5.3"
+  val zioHttp    = "3.11.3"
+  val zioJson    = "0.9.2"
+  // test
+  val scalatest      = "3.2.20"
+  val scoverage      = "2.5.2"
+}
+
+/** Settings shared by every module (mirrors sbt's `commonSettings`). */
+trait PillsModule extends SbtModule with ScalafmtModule {
+  def scalaVersion = Versions.scala
+
+  def scalacOptions = Seq(
+    "-deprecation",
+    "-encoding",
+    "utf-8",
+    "-explain",
+    "-explaintypes",
+    "-feature",
+    "-unchecked",
+    "-language:higherKinds",
+    "-Wunused:imports"
+  )
+
+  // sbt ran with CWD == project root; StreamsPill reads "file.txt" via a bare
+  // relative path, which only resolves if the fork's working dir matches.
+  def forkWorkingDir = moduleDir
+}
+
+object pills extends PillsModule with ScoverageModule {
+  def scoverageVersion = Versions.scoverage
+
+  def mvnDeps = Seq(
+    mvn"dev.zio::zio:${Versions.zio}",
+    mvn"dev.zio::zio-prelude:${Versions.zioPrelude}",
+    mvn"dev.zio::zio-logging-slf4j:${Versions.zioLogging}",
+    mvn"dev.zio::zio-http:${Versions.zioHttp}",
+    mvn"dev.zio::zio-json:${Versions.zioJson}"
+  )
+
+  // sbt-assembly merged these duplicate, non-functional metadata files with
+  // MergeStrategy.last; Mill's assemblyRules has no literal "keep last", so
+  // they're excluded instead, which is behaviorally equivalent for a runnable jar.
+  def assemblyRules = Seq(
+    Rule.ExcludePattern("META-INF/versions/9/OSGI-INF/MANIFEST\\.MF"),
+    Rule.ExcludePattern("META-INF/versions/9/module-info\\.class"),
+    Rule.ExcludePattern("META-INF/versions/11/module-info\\.class"),
+    Rule.ExcludePattern("META-INF/io\\.netty\\.versions\\.properties")
+  ) ++ Assembly.defaultRules
+
+  // Every test source in src/test/scala is compiled by both submodules
+  // (mirroring sbt's commonSettings, which put both dep sets on the
+  // classpath), but each submodule's testFramework only *executes* the
+  // specs matching its own fingerprint - ScalaTest specs here, ...
+  trait PillsTests extends ScoverageTests with SbtTests {
+    def mvnDeps = Seq(
+      mvn"org.scalatest::scalatest:${Versions.scalatest}",
+      mvn"dev.zio::zio-test:${Versions.zio}",
+      mvn"dev.zio::zio-test-sbt:${Versions.zio}",
+      mvn"dev.zio::zio-test-magnolia:${Versions.zio}"
+    )
+    def forkWorkingDir = moduleDir / os.up
+  }
+
+  object test extends PillsTests with TestModule.ScalaTest
+
+  // ... and the FiberPillSpec ZIO Test spec here.
+  object zioTest extends PillsTests with TestModule.ZioTest {
+    def sources = test.sources
+  }
+}
+
+object `pills-int` extends PillsModule {
+  def moduleDeps = Seq(pills)
+
+  object test extends SbtTests with TestModule.ScalaTest {
+    def mvnDeps = Seq(mvn"org.scalatest::scalatest:${Versions.scalatest}")
+  }
+}
+
+// Command-alias equivalents (sbt's addCommandAlias):
+//   xcoverage -> ./mill clean && ./mill pills.test + pills.zioTest && ./mill pills.scoverage.xmlReport + pills.scoverage.htmlReport
+//   xdup      -> ./mill mill.javalib.Dependency/showUpdates   (built into Mill, no plugin needed)

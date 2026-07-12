@@ -30,3 +30,28 @@ jobs:
       run: sbt -v --client assembly
     - name: coverage
       run: sbt -v --client xcoverage
+
+  mill:
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup JDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '25'
+    - name: compile main
+      run: ./mill __.compile
+    - name: compile unit tests
+      run: ./mill __.test.compile + pills.zioTest.compile
+    - name: tests
+      run: ./mill pills.test + pills.zioTest + pills-int.test
+    - name: formatting
+      run: ./mill mill.scalalib.scalafmt/checkFormatAll
+    - name: assembly
+      run: ./mill pills.assembly
+    - name: coverage
+      run: ./mill pills.scoverage.xmlReport + pills.scoverage.htmlReport
