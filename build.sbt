@@ -18,12 +18,21 @@ lazy val basicScalacOptions = Seq(
   "-Wunused:imports"
 )
 
+// The scoverage runtime writes measurement files directly into `scoverage-data`
+// assuming the directory already exists (it never calls mkdirs itself). Under sbt 2's
+// task-result caching, a cached `compile` can be replayed without the compiler plugin
+// re-creating that directory, so pre-create it explicitly before tests run.
+lazy val ensureCoverageDataDir = Def.task {
+  IO.createDirectory(coverageDataDir.value / "scoverage-data")
+}
+
 lazy val commonSettings = Seq(
   scalacOptions ++= basicScalacOptions,
   libraryDependencies ++= Seq(scalaTest) ++ zioTest,
-  testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
+  testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   // resolvers += // temporal for ZIO snapshots
   //  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  Test / executeTests := Def.uncached((Test / executeTests).dependsOn(ensureCoverageDataDir).value)
 )
 
 lazy val pills = (project in file("pills"))
