@@ -36,7 +36,6 @@ lazy val pills = (project in file("pills"))
       zioHttp,
       zioJson
     ),
-    coverageEnabled := false,
     assemblyStrategy
   )
 
