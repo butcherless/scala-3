@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sbt compile)",
+      "mcp__context7__query-docs",
+      "mcp__context7__resolve-library-id",
+      "Bash(sbt scalafmtCheckAll)",
+      "Bash(curl -s \"https://api.github.com/*)",
+      "Bash(sbt \"Test/compile\")",
+      "Bash(curl -s \"https://search.maven.org/*)",
+      "Bash(java -version)",
+      "Bash(sbt --version)",
+      "Bash(sbt test)",
+      "Bash(./mill pills.test*)",
+      "Bash(sbt dependencyUpdates)",
+      "Bash(./mill resolve *)",
+      "Bash(./mill pills.scoverage.xmlReport*)"
+    ]
+  }
+}
