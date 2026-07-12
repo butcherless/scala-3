@@ -19,12 +19,13 @@ lazy val basicScalacOptions = Seq(
 )
 
 // The scoverage runtime writes measurement files directly into `scoverage-data`
-// assuming the directory already exists (it never calls mkdirs itself). Under sbt 2's
-// task-result caching, a cached `compile` can be replayed without the compiler plugin
-// re-creating that directory, so pre-create it explicitly before tests run.
-lazy val ensureCoverageDataDir = Def.task {
-  IO.createDirectory(coverageDataDir.value / "scoverage-data")
-}
+// assuming the directory already exists (it never calls mkdirs itself). This task's
+// only job is that filesystem side effect, so it must be Def.uncached itself too:
+// otherwise sbt 2's CAS caches its (meaningless) Unit result and replays it without
+// touching the filesystem, silently skipping the mkdir on a cache hit. Def.uncached
+// only takes effect as the direct right-hand side of `key :=`, so this needs a real
+// taskKey rather than a bare `lazy val = Def.task { ... }`.
+lazy val ensureCoverageDataDir = taskKey[Unit]("Create <module>/scoverage-data before tests run")
 
 lazy val commonSettings = Seq(
   scalacOptions ++= basicScalacOptions,
@@ -32,7 +33,20 @@ lazy val commonSettings = Seq(
   testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   // resolvers += // temporal for ZIO snapshots
   //  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-  Test / executeTests := Def.uncached((Test / executeTests).dependsOn(ensureCoverageDataDir).value)
+  ensureCoverageDataDir := Def.uncached {
+    IO.createDirectory(coverageDataDir.value / "scoverage-data")
+  },
+  Test / executeTests := Def.uncached((Test / executeTests).dependsOn(ensureCoverageDataDir).value),
+  // scoverage's compiler plugin also writes scoverage-data/scoverage.coverage as a side
+  // effect of `compile`, with the same "assumes the dir exists" behavior as the runtime
+  // Invoker above -- so the dir must exist before compile runs too, not just before
+  // tests. Def.uncached here is load-bearing for two separate reasons: (1) overriding
+  // Compile / compile requires it anyway, since CompileAnalysis has no JsonFormat and
+  // sbt refuses to cache it without an explicit opt-out; (2) even so, verified
+  // empirically that this does NOT stop CAS from replaying a cached compile -- that
+  // happens below the facade key this wraps. The actual cache-bypass for CI/local runs
+  // is the cacheVersion bump in the xcoverage alias.
+  Compile / compile := Def.uncached((Compile / compile).dependsOn(ensureCoverageDataDir).value)
 )
 
 lazy val pills = (project in file("pills"))
@@ -82,7 +96,14 @@ LocalRootProject / cls := Def.uncached {
   println(s"$chars$brs ")
 }
 
-addCommandAlias("xcoverage", "clean;coverage;testFull;coverageReport")
+// sbt 2's CAS caches `compile` below the level Def.uncached can reach on the compile
+// key itself (verified empirically), so a cached compile silently skips scoverage's
+// instrumentation-catalog write even with coverage freshly enabled. cacheVersion is
+// sbt's documented escape hatch for exactly this ("invalidate all caches"); bumping it
+// to a fresh value before every coverage run forces a genuine recompile, at the cost of
+// caching for that one run -- an acceptable trade for a command that's meant to measure
+// coverage accurately, not to be fast.
+addCommandAlias("xcoverage", "set Global / cacheVersion := System.currentTimeMillis; clean;coverage;testFull;coverageReport")
 addCommandAlias("xreload", "clean;reload")
 addCommandAlias("xstart", "clean;reStart")
 addCommandAlias("xstop", "reStop;clean")
