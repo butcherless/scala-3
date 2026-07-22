@@ -64,6 +64,15 @@ sbt's `assemblyMergeStrategy` (`build.sbt`) uses `MergeStrategy.last` for a few 
 
 Renovate (`renovate.json`) currently only has `"sbt": { "enabled": true }` — it does not track `build.mill` dependency versions.
 
+## Versioning policy
+
+- **Scala** — LTS only (currently 3.3.8). Never upgrade to a non-LTS minor.
+- **Direct deps** — stable GA by default. Named exception: ZIO Prelude (`1.0.0-RC47`, no GA release yet) — don't chase a newer RC without a deliberate reason (a GA release or a needed capability).
+- **Transitive deps** — let the resolver (sbt/Mill) handle these via eviction; only force an override for a known vulnerability or binary-incompatibility.
+- **SBT plugins, SBT itself, Mill itself, scalafmt formatter** — stable GA only, no exception mechanism.
+- **GitHub Actions** (`.github/workflows/scala.yml`) — pinned to floating major-version tags (e.g. `actions/checkout@v7`), not commit SHAs. Patch/minor releases are picked up automatically; only a new major needs a manual bump.
+- **Updates** — run `sbt xdup` (or `./mill mill.javalib.Dependency/showUpdates`) periodically. Patch/minor updates are free to apply; major bumps need migration-guide review and a passing compile + full test suite on **both** build tools before merging. See the `bump-versions` skill for the full check/apply workflow.
+
 ## Formatting
 
 `.scalafmt.conf` governs both builds identically (Mill reads the same root config). Notable non-default settings: `rewrite.imports.sort = scalastyle` with import groups `[javax?, scala, *]`, `newlines.source = keep`, `docstrings = JavaDoc`.
