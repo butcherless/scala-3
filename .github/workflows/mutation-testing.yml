@@ -1,0 +1,50 @@
+name: Mutation Testing
+
+on:
+  schedule:
+    - cron: '0 8 * * 2'  # every Tuesday at 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stryker:
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup JDK
+      uses: ./.github/actions/setup-jdk
+      with:
+        cache: sbt
+    - uses: sbt/setup-sbt@v1
+    - name: Mutation testing (Stryker4s)
+      # stryker4s.conf's legacy-test-runner forks a new sbt process per mutant; its default
+      # concurrency (3) times .jvmopts' -Xmx4096m could demand ~12GB of heap in parallel, tight
+      # against this runner's 16GB. Capped to 1 here for reliability on an unattended weekly run
+      # - correctness matters more than speed for a report-only job. The local default (3) is
+      # left alone since it's already proven reliable on a real machine.
+      run: sbt pills/stryker --concurrency 1 | tee stryker-output.log
+    - name: Report mutation score
+      if: always()
+      run: |
+        {
+          echo '## Mutation testing (Stryker4s)'
+          echo '```'
+          grep -E 'Mutation score|threshold' stryker-output.log || echo 'No score line found - see the full log or the uploaded report.'
+          echo '```'
+        } | tee -a "$GITHUB_STEP_SUMMARY"
+    - name: Upload mutation report
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: stryker4s-report
+        path: pills/target/stryker4s-report/**
+        retention-days: 90

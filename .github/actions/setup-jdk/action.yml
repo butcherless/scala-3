@@ -1,0 +1,20 @@
+name: Setup JDK
+description: Set up the JDK shared by the sbt and Mill build jobs
+# Assumes the caller has already run actions/checkout - local composite actions are resolved
+# against the checked-out workspace, so checkout can't live inside this action.
+
+inputs:
+  cache:
+    description: "Dependency cache to enable, passed through to actions/setup-java's cache input (e.g. 'sbt'). Leave empty to disable - Mill has no matching preset here."
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Setup JDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '25'
+        cache: ${{ inputs.cache }}

@@ -33,6 +33,7 @@ sbt scalafmtAll           # reformat in place
 sbt assembly               # build the pills fat jar (custom merge strategy in build.sbt)
 sbt xcoverage              # alias: clean;coverage;test;coverageReport
 sbt xdup                   # alias: dependencyUpdates
+sbt pills/stryker          # mutation testing (Stryker4s); config in stryker4s.conf
 ```
 
 `xstart`/`xstop` aliases exist in `build.sbt` (`reStart`/`reStop`) but are **broken** — `sbt-revolver` isn't in `project/plugins.sbt`. Don't rely on them.
@@ -54,7 +55,9 @@ sbt xdup                   # alias: dependencyUpdates
 ./mill pills.runMain com.cmartin.learn.StreamsPill     # run a specific main (several App objects exist; ambiguous without a class name)
 ```
 
-CI (`.github/workflows/scala.yml`) runs both the `scala3` (sbt) and `mill` jobs in parallel, mirroring the same steps: compile → test → scalafmtCheckAll → assembly → coverage.
+CI (`.github/workflows/scala.yml`) runs both the `scala3` (sbt) and `mill` jobs in parallel, mirroring the same steps: compile → test → scalafmtCheckAll → assembly → coverage. Both jobs share JDK setup via the `.github/actions/setup-jdk` composite action (JDK version/distribution defined once); the sbt job additionally passes `cache: sbt` to it, Mill doesn't since there's no equivalent `setup-java` cache preset.
+
+A separate `.github/workflows/mutation-testing.yml` runs Stryker4s (see "Mutation testing" below) weekly and on manual dispatch — not part of this main push-triggered workflow.
 
 ## Build tool parity
 
@@ -64,6 +67,8 @@ sbt's `assemblyMergeStrategy` (`build.sbt`) uses `MergeStrategy.last` for a few 
 
 Renovate (`renovate.json`) currently only has `"sbt": { "enabled": true }` — it does not track `build.mill` dependency versions.
 
+Stryker4s (see "Mutation testing" below) is a deliberate exception to this parity rule — sbt-only, not mirrored to Mill.
+
 ## Versioning policy
 
 - **Scala** — LTS only (currently 3.3.8). Never upgrade to a non-LTS minor.
@@ -72,6 +77,16 @@ Renovate (`renovate.json`) currently only has `"sbt": { "enabled": true }` — i
 - **SBT plugins, SBT itself, Mill itself, scalafmt formatter** — stable GA only, no exception mechanism.
 - **GitHub Actions** (`.github/workflows/scala.yml`) — pinned to floating major-version tags (e.g. `actions/checkout@v7`), not commit SHAs. Patch/minor releases are picked up automatically; only a new major needs a manual bump.
 - **Updates** — run `sbt xdup` (or `./mill mill.javalib.Dependency/showUpdates`) periodically. Patch/minor updates are free to apply; major bumps need migration-guide review and a passing compile + full test suite on **both** build tools before merging. See the `bump-versions` skill for the full check/apply workflow.
+
+## Mutation testing (Stryker4s)
+
+`stryker4s.conf` (repo root, HOCON) configures Stryker4s, run via `sbt pills/stryker`. Mutates only `pills/src/main/scala/**/*.scala` — `pills-int` has no main sources.
+
+sbt-only, deliberately not mirrored to Mill: `pills`'s test suite is split across two frameworks (see "Modules" above — ScalaTest for most specs, ZIO Test for `FiberPillSpec` alone), and Mill's Stryker4s plugin can only wire a mutation run to one child test module at a time, so it can't exercise both `pills.test` and `pills.zioTest` the way sbt's `commonSettings` does on a single `test` task. Revisit if Stryker4s ever adds multi-test-module support on the Mill side.
+
+`legacy-test-runner = true` is required in `stryker4s.conf`, not optional — the default (non-legacy) sbt-stryker4s test runner's initial run is unreliable on this project's mixed-framework test suite (a spurious second initial run fires with a reduced suite subset and a false failure, aborting before any mutants run). The legacy runner forks a plain `sbt test` per mutant instead, which is reliable but needs more heap than sbt's 1GB default once it's spawning that many JVMs in sequence — this is why `.jvmopts` (repo root, `-Xmx4096m`) exists; without it, a `pills/stryker` run dies with `OutOfMemoryError` partway through. `.jvmopts` applies to every sbt invocation in this repo, not just Stryker4s, since sbt reads it automatically on launch.
+
+Not part of the main push-triggered CI (`scala.yml`) — mutation runs are slow (the legacy runner takes minutes even on this small repo) and exploratory. Instead, `.github/workflows/mutation-testing.yml` runs it weekly (Tuesday 08:00 UTC) plus on manual `workflow_dispatch`, posting the score to the run's step summary and uploading the HTML report as a build artifact (90-day retention). That workflow caps `--concurrency 1` — stryker4s.conf's local default (3) times `.jvmopts`' `-Xmx4096m` could demand ~12GB of parallel heap across forked sbt subprocesses, tight against a standard GitHub-hosted runner's 16GB; capping to 1 trades speed for reliability on an unattended run. It's report-only regardless: thresholds in `stryker4s.conf` are `break = 0` until a baseline mutation score exists — the first real run scored 29% overall, expected for a repo where the demo `App`/`ZIOAppDefault` mains (`HelloWorldApp`, `SalesApp`, etc.) have little to no test coverage by design.
 
 ## Formatting
 
