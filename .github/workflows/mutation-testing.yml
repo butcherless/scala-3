@@ -2,7 +2,7 @@ name: Mutation Testing
 
 on:
   schedule:
-    - cron: '0 8 * * 2'  # every Tuesday at 08:00 UTC
+    - cron: '0 15 * * 5'  # every Tuesday at 08:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ jobs:
   stryker:
 
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
     - uses: actions/checkout@v7
