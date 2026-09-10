@@ -30,6 +30,6 @@ object OpaquePill:
       def apply(name: String): DeviceName = name
 
     extension (name: DeviceName)
-      def toString: String = name
+      def show: String = name
 
   case class Device(companyId: CompanyId, objectId: ObjectId, name: DeviceName)
