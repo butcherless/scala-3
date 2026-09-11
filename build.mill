@@ -59,7 +59,14 @@ object pills extends PillsModule with ScoverageModule {
     Rule.ExcludePattern("META-INF/versions/9/OSGI-INF/MANIFEST\\.MF"),
     Rule.ExcludePattern("META-INF/versions/9/module-info\\.class"),
     Rule.ExcludePattern("META-INF/versions/11/module-info\\.class"),
-    Rule.ExcludePattern("META-INF/io\\.netty\\.versions\\.properties")
+    Rule.ExcludePattern("META-INF/io\\.netty\\.versions\\.properties"),
+    // com.lihaoyi:unroll-annotation_3 (pulled in transitively by zio-http) ships
+    // its own copy of scala/annotation/unroll, compiled against an older
+    // scala3-library; since Scala 3.9 the annotation lives in scala-library
+    // itself, so the two collide (sbt-assembly errors on it, Mill doesn't, but
+    // exclude it here too so both builds keep the same, deliberate one).
+    Rule.ExcludePattern("scala/annotation/unroll\\.class"),
+    Rule.ExcludePattern("scala/annotation/unroll\\.tasty")
   ) ++ Assembly.defaultRules
 
   // Every test source in src/test/scala is compiled by both submodules
