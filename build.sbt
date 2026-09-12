@@ -55,6 +55,11 @@ lazy val assemblyStrategy = ThisBuild / assemblyMergeStrategy := {
   case "META-INF/versions/9/module-info.class" => MergeStrategy.last
   case "META-INF/versions/11/module-info.class" => MergeStrategy.last
   case "META-INF/io.netty.versions.properties" => MergeStrategy.last
+  // com.lihaoyi:unroll-annotation_3 (pulled in transitively by zio-http) ships its
+  // own copy of scala/annotation/unroll, compiled against an older scala3-library;
+  // since Scala 3.9 the annotation lives in scala-library itself, so the two collide.
+  case "scala/annotation/unroll.class" => MergeStrategy.last
+  case "scala/annotation/unroll.tasty" => MergeStrategy.last
   // default case
   case default =>
     val oldStrategy = assemblyMergeStrategy.value
