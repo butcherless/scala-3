@@ -184,8 +184,7 @@ object ZLayerPill:
           MyCountryRepositoryLive.layer,
           MyAirportRepositoryLive.layer,
           MyCountryServiceLive.layer,
-          MyAirportServiceLive.layer,
-          ZLayer.Debug.mermaid
+          MyAirportServiceLive.layer
         )
 
       val fullProgram =
