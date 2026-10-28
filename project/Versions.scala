@@ -5,7 +5,7 @@ object Versions {
   val zioPrelude = "1.0.0-RC48"
   val zioLogging = "2.5.3"
   val zioHttp    = "3.11.6"
-  val zioJson    = "1.1.0"
+  val zioJson    = "1.1.1"
 
   // test
   val scalatest = "3.2.20"
