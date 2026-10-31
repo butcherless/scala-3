@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
-PLUGIN_RE = re.compile(r'addSbtPlugin\("([^"]+)"\s*%\s*"([^"]+)"\s*%\s*"([^"]+)"\)')
+# Anchored to the start of the line so commented-out `//addSbtPlugin(...)` lines aren't reported.
+PLUGIN_RE = re.compile(r'^\s*addSbtPlugin\("([^"]+)"\s*%\s*"([^"]+)"\s*%\s*"([^"]+)"\)', re.MULTILINE)
 PRERELEASE_RE = re.compile(r"(?i)(rc|m\d|alpha|beta|snapshot)")
 
 # Plugins allowed to be reported on a pre-release version when no stable release exists yet.
