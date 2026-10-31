@@ -1,93 +1,73 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project
 
-A personal Scala 3 learning/reference repo ("pills" = small self-contained examples) demonstrating the ZIO ecosystem: effects, fibers, streams, STM, ZLayer dependency injection, zio-http, zio-json. Package root: `com.cmartin.learn`.
+A personal Scala 3 reference repo ("pills" = small self-contained examples) for the ZIO ecosystem: effects, fibers, streams, STM, ZLayer, zio-http, zio-json. Package root: `com.cmartin.learn`.
 
-Two build tools are configured **in parallel** for the same codebase:
-- `build.sbt` — the original, currently what CI and Renovate track.
-- `build.mill` — a newer equivalent build, added for evaluation. Not yet wired into CI's dependency-update automation.
-
-Both must be kept in sync when dependencies, scalac options, or module structure change. See "Build tool parity" below.
+Two builds are configured **in parallel** for the same code, `build.sbt` and `build.mill`, and CI runs both. See "Build tool parity".
 
 ## Modules
 
-- `pills` — the main module. Contains ZIO examples, a few runnable `App`/`ZIOAppDefault` mains (e.g. `HelloWorldApp`, `FiberPillApp`, `SalesApp`, `StreamsPill`), and most of the test suite.
-- `pills-int` — integration tests; depends on `pills`, not published.
+- `pills`: the main module, with runnable mains (e.g. `HelloWorldApp`, `FiberPillApp`, `SalesApp`, `StreamsPill`) and most tests.
+- `pills-int`: integration tests.
 
-Test specs are split across **two frameworks in the same `pills` module**: most specs use ScalaTest (`AnyFlatSpec`), but `FiberPillSpec` uses ZIO Test (`ZIOSpecDefault`). This is why `pills` has two Mill test submodules (`pills.test` for ScalaTest, `pills.zioTest` for ZIO Test) instead of one — Mill's `TestModule` only supports a single framework per submodule, unlike sbt which dispatches per-class across multiple registered frameworks in one `test` task.
+Most specs use ScalaTest; `FiberPillSpec` uses ZIO Test. Mill's `TestModule` supports one framework per submodule, hence `pills.test` and `pills.zioTest`. sbt handles both in one `test` task.
 
-`pills/file.txt` is a large word-list resource read via a bare relative path (`Source.fromFile("file.txt")`) in `StreamsPill`, not as a classpath resource — it depends on the process's working directory being the module root. sbt does this by default; the Mill build sets `forkWorkingDir` explicitly to match.
+`StreamsPill` reads `pills/file.txt` through a bare relative path, so the working directory must be the module root. sbt does this by default; Mill sets `forkWorkingDir` to match.
 
-## Commands (sbt)
-
-```
-sbt compile              # compile main sources
-sbt Test/compile         # compile test sources
-sbt test                 # run all tests (both pills and pills-int, both frameworks)
-sbt "testOnly *AdtPillSpec"   # run a single spec
-sbt scalafmtCheckAll      # format check (CI-enforced)
-sbt scalafmtAll           # reformat in place
-sbt assembly               # build the pills fat jar (custom merge strategy in build.sbt)
-sbt xcoverage              # alias: clean;coverage;test;coverageReport
-sbt xdup                   # alias: dependencyUpdates
-sbt pills/stryker          # mutation testing (Stryker4s); config in stryker4s.conf
-```
-
-`xstart`/`xstop` aliases exist in `build.sbt` (`reStart`/`reStop`) but are **broken** — `sbt-revolver` isn't in `project/plugins.sbt`. Don't rely on them.
-
-## Commands (Mill)
+## Commands
 
 ```
-./mill pills.compile
-./mill __.compile                                   # compile everything
-./mill pills.test                                   # ScalaTest specs
-./mill pills.zioTest                                 # the one ZIO Test spec (FiberPillSpec)
-./mill pills.test + pills.zioTest + pills-int.test    # full test run, matches `sbt test`
-./mill pills.test.testOnly com.cmartin.learn.AdtPillSpec   # single spec
+sbt compile                 # main sources; sbt Test/compile for tests
+sbt test                    # all tests, both modules and frameworks
+sbt "testOnly *AdtPillSpec" # single spec
+sbt scalafmtAll             # format; sbt scalafmtCheckAll is the CI check
+sbt assembly                # pills fat jar
+sbt xcoverage               # clean;coverage;test;coverageReport
+sbt xdup                    # dependencyUpdates
+sbt pills/stryker           # mutation testing
+```
+
+`xstart`/`xstop` are broken: `sbt-revolver` isn't in `project/plugins.sbt`.
+
+```
+./mill __.compile
+./mill pills.test + pills.zioTest + pills-int.test    # full run, matches sbt test
+./mill pills.test.testOnly com.cmartin.learn.AdtPillSpec
 ./mill mill.scalalib.scalafmt/checkFormatAll          # format check
-./mill mill.scalalib.scalafmt/                        # reformat in place
+./mill mill.scalalib.scalafmt/                        # format
 ./mill pills.assembly
 ./mill pills.scoverage.xmlReport + pills.scoverage.htmlReport
-./mill mill.javalib.Dependency/showUpdates             # equivalent of sbt's xdup, built into Mill core
-./mill pills.runMain com.cmartin.learn.StreamsPill     # run a specific main (several App objects exist; ambiguous without a class name)
+./mill mill.javalib.Dependency/showUpdates            # equivalent of xdup
+./mill pills.runMain com.cmartin.learn.StreamsPill    # several mains exist, so name one
 ```
 
-CI (`.github/workflows/scala.yml`) runs both the `scala3` (sbt) and `mill` jobs in parallel, mirroring the same steps: compile → test → scalafmtCheckAll → assembly → coverage. Both jobs share JDK setup via the `.github/actions/setup-jdk` composite action (JDK version/distribution defined once); the sbt job additionally passes `cache: sbt` to it, Mill doesn't since there's no equivalent `setup-java` cache preset.
+## CI
 
-A separate `.github/workflows/mutation-testing.yml` runs Stryker4s (see "Mutation testing" below) weekly and on manual dispatch — not part of this main push-triggered workflow.
+`.github/workflows/scala.yml` runs the `scala3` (sbt) and `mill` jobs in parallel with the same steps. They share JDK setup through `.github/actions/setup-jdk`. Only the sbt job passes `cache: sbt`, since `setup-java` has no Mill preset.
 
 ## Build tool parity
 
-`project/Versions.scala`/`project/Dependencies.scala` (sbt) and the `Versions` object in `build.mill` must be kept in sync manually — there's no shared source of dependency versions between the two builds. When bumping a dependency or Scala version, update both.
-
-sbt's `assemblyMergeStrategy` (`build.sbt`) uses `MergeStrategy.last` for a few duplicate netty/module-info metadata files; Mill's `assemblyRules` has no literal "keep last" rule, so the equivalent entries in `build.mill` use `Rule.ExcludePattern` instead — behaviorally equivalent for a runnable jar but not byte-identical.
-
-Renovate (`renovate.json`) currently only has `"sbt": { "enabled": true }` — it does not track `build.mill` dependency versions.
-
-Stryker4s (see "Mutation testing" below) is a deliberate exception to this parity rule — sbt-only, not mirrored to Mill.
+- `project/Versions.scala`/`project/Dependencies.scala` and the `Versions` object in `build.mill` have no shared source. **When changing a dependency, the Scala version, scalac options or module structure, update both.**
+- Renovate only tracks the sbt side, so the `bump-versions` skill keeps Mill and `.mill-version` current.
+- sbt's `assemblyMergeStrategy` uses `MergeStrategy.last` for some duplicate netty/module-info files. Mill has no such rule and uses `Rule.ExcludePattern`, which is equivalent for a runnable jar but not byte-identical.
+- Stryker4s is sbt-only. Mill's plugin can only wire one test module, so it can't cover both `pills.test` and `pills.zioTest`.
 
 ## Versioning policy
 
-- **Scala** — LTS only (currently 3.9.0). Never upgrade to a non-LTS minor.
-- **Direct deps** — stable GA by default. Named exception: ZIO Prelude (`1.0.0-RC48`, no GA release yet) — don't chase a newer RC without a deliberate reason (a GA release or a needed capability).
-- **Transitive deps** — let the resolver (sbt/Mill) handle these via eviction; only force an override for a known vulnerability or binary-incompatibility.
-- **SBT plugins, SBT itself, Mill itself, scalafmt formatter** — stable GA only, no exception mechanism.
-- **GitHub Actions** (`.github/workflows/scala.yml`) — pinned to floating major-version tags (e.g. `actions/checkout@v7`), not commit SHAs. Patch/minor releases are picked up automatically; only a new major needs a manual bump.
-- **Updates** — run `sbt xdup` (or `./mill mill.javalib.Dependency/showUpdates`) periodically. Patch/minor updates are free to apply; major bumps need migration-guide review and a passing compile + full test suite on **both** build tools before merging. See the `bump-versions` skill for the full check/apply workflow.
+- **Scala**: always the latest LTS or newer, never a mainline release.
+- **Direct deps**: stable GA. Named exception: ZIO Prelude (no GA release yet); don't chase a newer RC without a GA release or a needed capability.
+- **Transitive deps**: left to the resolver; override only for a known vulnerability or binary incompatibility.
+- **sbt plugins, sbt, Mill, scalafmt**: stable GA only.
+- **GitHub Actions**: floating major tags (`actions/checkout@v7`), not SHAs. Only a new major needs a manual bump.
+- **Updates**: patch/minor are free. Major bumps need a migration-guide review and a passing compile and test run on **both** builds. See the `bump-versions` skill.
 
 ## Mutation testing (Stryker4s)
 
-`stryker4s.conf` (repo root, HOCON) configures Stryker4s, run via `sbt pills/stryker`. Mutates only `pills/src/main/scala/**/*.scala` — `pills-int` has no main sources.
+`stryker4s.conf` mutates `pills/src/main/scala/**`. `.github/workflows/mutation-testing.yml` runs it on Fridays at 15:00 UTC or manually, and isn't part of `scala.yml`. It's report-only (`break = 0`), posts the score to the step summary and uploads the HTML report. Scores stay modest because the demo mains have little test coverage by design.
 
-sbt-only, deliberately not mirrored to Mill: `pills`'s test suite is split across two frameworks (see "Modules" above — ScalaTest for most specs, ZIO Test for `FiberPillSpec` alone), and Mill's Stryker4s plugin can only wire a mutation run to one child test module at a time, so it can't exercise both `pills.test` and `pills.zioTest` the way sbt's `commonSettings` does on a single `test` task. Revisit if Stryker4s ever adds multi-test-module support on the Mill side.
-
-`legacy-test-runner = true` is required in `stryker4s.conf`, not optional — the default (non-legacy) sbt-stryker4s test runner's initial run is unreliable on this project's mixed-framework test suite (a spurious second initial run fires with a reduced suite subset and a false failure, aborting before any mutants run). The legacy runner forks a plain `sbt test` per mutant instead, which is reliable but needs more heap than sbt's 1GB default once it's spawning that many JVMs in sequence — this is why `.jvmopts` (repo root, `-Xmx4096m`) exists; without it, a `pills/stryker` run dies with `OutOfMemoryError` partway through. `.jvmopts` applies to every sbt invocation in this repo, not just Stryker4s, since sbt reads it automatically on launch.
-
-Not part of the main push-triggered CI (`scala.yml`) — mutation runs are slow (the legacy runner takes minutes even on this small repo) and exploratory. Instead, `.github/workflows/mutation-testing.yml` runs it weekly (Tuesday 08:00 UTC) plus on manual `workflow_dispatch`, posting the score to the run's step summary and uploading the HTML report as a build artifact (90-day retention). That workflow caps `--concurrency 1` — stryker4s.conf's local default (3) times `.jvmopts`' `-Xmx4096m` could demand ~12GB of parallel heap across forked sbt subprocesses, tight against a standard GitHub-hosted runner's 16GB; capping to 1 trades speed for reliability on an unattended run. It's report-only regardless: thresholds in `stryker4s.conf` are `break = 0` until a baseline mutation score exists — the first real run scored 29% overall, expected for a repo where the demo `App`/`ZIOAppDefault` mains (`HelloWorldApp`, `SalesApp`, etc.) have little to no test coverage by design.
+`legacy-test-runner = true` is required: the default runner fires a spurious second initial run on this mixed-framework suite and aborts. The legacy runner forks `sbt test` per mutant and needs more heap, hence `.jvmopts` (`-Xmx4096m`), which applies to every sbt run here. Without it, `pills/stryker` dies with `OutOfMemoryError`.
 
 ## Formatting
 
-`.scalafmt.conf` governs both builds identically (Mill reads the same root config). Notable non-default settings: `rewrite.imports.sort = scalastyle` with import groups `[javax?, scala, *]`, `newlines.source = keep`, `docstrings = JavaDoc`.
+`.scalafmt.conf` governs both builds. Non-default settings: `rewrite.imports.sort = scalastyle`, import groups `[javax?, scala, *]`, `newlines.source = keep`, `docstrings = JavaDoc`.
