@@ -94,14 +94,13 @@ can be used as a cross-check but should never disagree with `xdup` once the two 
 **Scala language version** (the `Versions.scala`/`build.mill` `scala` value — `xdup` can't tell an
 LTS release from a mainline one, so check GitHub directly):
 ```bash
-curl -s "https://api.github.com/repos/scala/scala3/releases" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-lts = [r['tag_name'] for r in data if 'LTS' in (r.get('name') or '') and '-RC' not in r['tag_name']]
-print('latest LTS:', lts[0] if lts else 'none found')
-"
+gh api 'repos/scala/scala3/releases?per_page=100' \
+  --jq '[.[] | select(.prerelease | not) | select((.name // "") | test("LTS")) | .tag_name | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))] | max_by(split(".") | map(tonumber))'
 ```
-Compare against `Versions.scala`'s `scala` value (and confirm `build.mill` still matches it).
+Compare against `Versions.scala`'s `scala` value, numerically and using Step 3's rule (and confirm
+`build.mill` still matches it). The query takes the *highest* LTS version, never the first one
+listed: GitHub orders releases by date, and a patch on an older LTS line (`3.3.9`, published after
+`3.9.0`) can come first.
 
 **SBT plugins:**
 ```bash
@@ -134,7 +133,17 @@ SHA-pin script expecting output.
 
 Read CLAUDE.md's "Versioning policy" for the full rationale; in short:
 
-- **Scala** → latest LTS only (from Step 2's GitHub check), never a newer mainline release.
+- **Scala** → always the latest LTS (from Step 2's GitHub check) or a newer LTS, never a mainline
+  release. A project may stay off LTS for tests or PoCs if it says so, in CLAUDE.md's "Versioning
+  policy" or in a comment on the `Versions.scala` Scala value (none in this project today). Check
+  for an exception first, then:
+  - **Exception recorded** → leave the Scala version alone apart from patch bumps on its own line.
+    Report it as an exception, not a deviation.
+  - **Older than the latest LTS** → apply the latest LTS. No scope confirmation needed in Step 4;
+    Step 5's verify gate still applies.
+  - **Equal to the latest LTS, or a newer LTS** → nothing to do.
+  - **On a non-LTS release with no recorded exception** → report it as a policy deviation and ask.
+    Don't downgrade on your own.
 - **Direct deps** → stable GA by default. ZIO Prelude (no GA release yet — see CLAUDE.md for the
   current pin) stays untouched entirely — don't chase a newer RC for it either, unless there's a
   deliberate reason (a GA release or a needed capability).
