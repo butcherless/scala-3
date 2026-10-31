@@ -1,6 +1,12 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.adoc'
+      - '**.puml'
+      - '**.graphml'
 
 permissions:
   contents: read
