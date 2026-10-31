@@ -71,8 +71,8 @@ Stryker4s (see "Mutation testing" below) is a deliberate exception to this parit
 
 ## Versioning policy
 
-- **Scala** — LTS only (currently 3.3.8). Never upgrade to a non-LTS minor.
-- **Direct deps** — stable GA by default. Named exception: ZIO Prelude (`1.0.0-RC47`, no GA release yet) — don't chase a newer RC without a deliberate reason (a GA release or a needed capability).
+- **Scala** — LTS only (currently 3.9.0). Never upgrade to a non-LTS minor.
+- **Direct deps** — stable GA by default. Named exception: ZIO Prelude (`1.0.0-RC48`, no GA release yet) — don't chase a newer RC without a deliberate reason (a GA release or a needed capability).
 - **Transitive deps** — let the resolver (sbt/Mill) handle these via eviction; only force an override for a known vulnerability or binary-incompatibility.
 - **SBT plugins, SBT itself, Mill itself, scalafmt formatter** — stable GA only, no exception mechanism.
 - **GitHub Actions** (`.github/workflows/scala.yml`) — pinned to floating major-version tags (e.g. `actions/checkout@v7`), not commit SHAs. Patch/minor releases are picked up automatically; only a new major needs a manual bump.
