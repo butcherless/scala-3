@@ -20,6 +20,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
     - name: Setup JDK
       uses: ./.github/actions/setup-jdk
       with:

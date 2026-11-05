@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Reports the latest available version for each SHA-pinned GitHub Action used in
-this repo's workflows and composite actions.
+"""Reports the latest available version for each GitHub Action used in this repo's
+workflows and composite actions.
 
-Actions here are pinned by full commit SHA with a trailing `# vX.Y.Z` comment (a
-supply-chain-security convention: a mutable tag can be repointed, a commit SHA
-can't — never regress to an unpinned tag reference). This script never rewrites
-files; it only reports current vs. latest, plus the new SHA to pin to when a bump
-is available, so applying one is a mechanical two-part edit (SHA + comment) rather
-than a second round of API lookups.
+Actions here are pinned to a floating major-version tag (`owner/repo@vN`), matching
+the repo convention — `.github/dependabot.yml`'s weekly `github-actions` update is
+what keeps them current; this script is the on-demand single-pass equivalent. It
+never rewrites files; it only reports current vs. latest so applying a bump is a
+one-line tag edit (in every file that references the action).
+
+GitHub is queried via `gh api` (authenticated: 5000 req/hr, and no token handling
+here) — same convention as the bump-versions skill's inline checks. `gh` must be
+logged in (`gh auth status`); if it isn't, every lookup returns "unknown".
 """
 import json
 import re
@@ -16,9 +19,10 @@ import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
-# Matches `uses: owner/repo@<40-hex-char-sha> # vX.Y.Z` — local actions (`uses: ./...`)
-# and Docker actions (`uses: docker://...`) don't match and are skipped.
-USES_RE = re.compile(r"uses:\s*([\w.-]+/[\w.-]+)@([0-9a-f]{40})\s*#\s*(\S+)")
+# Matches `uses: owner/repo@<ref>` where <ref> is a version tag (`v7`, `v7.0.1`).
+# Local actions (`uses: ./...`), Docker actions (`uses: docker://...`), and
+# branch/SHA refs don't match and are skipped.
+USES_RE = re.compile(r"uses:\s*([\w.-]+/[\w.-]+)@(v[0-9][\w.-]*)")
 
 
 def version_key(v: str) -> Tuple[int, ...]:
@@ -26,19 +30,19 @@ def version_key(v: str) -> Tuple[int, ...]:
 
 
 def gh_api(path: str) -> Optional[object]:
+    """`gh api repos/<path>` -> parsed JSON, or None on any failure (404, no auth, …)."""
     result = subprocess.run(
-        ["curl", "-s", f"https://api.github.com/repos/{path}"],
+        ["gh", "api", f"repos/{path}"],
         capture_output=True,
         text=True,
-        timeout=15,
+        timeout=20,
     )
+    if result.returncode != 0:
+        return None
     try:
-        data = json.loads(result.stdout)
+        return json.loads(result.stdout)
     except json.JSONDecodeError:
         return None
-    if isinstance(data, dict) and data.get("message") == "Not Found":
-        return None
-    return data
 
 
 def latest_tag(repo: str) -> Optional[str]:
@@ -51,16 +55,9 @@ def latest_tag(repo: str) -> Optional[str]:
     return None
 
 
-def resolve_sha(repo: str, ref: str) -> Optional[str]:
-    commit = gh_api(f"{repo}/commits/{ref}")
-    if isinstance(commit, dict) and "sha" in commit:
-        return commit["sha"]
-    return None
-
-
-def find_pins(root: Path) -> dict:
-    """repo -> {sha, comment, locations: [...], inconsistent: bool}"""
-    pins: dict = {}
+def find_refs(root: Path) -> dict:
+    """repo -> {refs: {ref -> [locations]}}"""
+    refs: dict = {}
     paths = list((root / ".github" / "workflows").glob("*.yml")) + list(
         (root / ".github" / "actions").rglob("action.yml")
     )
@@ -69,42 +66,43 @@ def find_pins(root: Path) -> dict:
             m = USES_RE.search(line)
             if not m:
                 continue
-            repo, sha, comment = m.groups()
-            entry = pins.setdefault(repo, {"sha": sha, "comment": comment, "locations": []})
-            if entry["sha"] != sha or entry["comment"] != comment:
-                entry["inconsistent"] = True
-            entry["locations"].append(f"{path.relative_to(root)}:{lineno}")
-    return pins
+            repo, ref = m.groups()
+            entry = refs.setdefault(repo, {})
+            entry.setdefault(ref, []).append(f"{path.relative_to(root)}:{lineno}")
+    return refs
 
 
 def main() -> None:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
-    pins = find_pins(root)
-    if not pins:
-        print("No SHA-pinned GitHub Actions found under .github/.", file=sys.stderr)
+    refs = find_refs(root)
+    if not refs:
+        print("No version-tagged GitHub Actions found under .github/.", file=sys.stderr)
         sys.exit(1)
 
-    print(f"{'ACTION':<28} {'CURRENT':<10} {'LATEST':<10} NEW SHA (if update)")
-    for repo, info in sorted(pins.items()):
-        current = info["comment"].lstrip("v")
+    print(f"{'ACTION':<28} {'CURRENT':<12} {'LATEST':<12} NOTE")
+    for repo, used in sorted(refs.items()):
+        current_refs = sorted(used)
+        current = ", ".join(current_refs)
         latest = latest_tag(repo)
         if latest is None:
-            print(f"{repo:<28} {info['comment']:<10} {'unknown':<10}  <-- no releases/tags found, check manually")
+            print(f"{repo:<28} {current:<12} {'unknown':<12} <-- no releases/tags found, check manually")
             continue
 
-        latest_norm = latest.lstrip("v")
         marker = ""
-        new_sha = ""
-        if info.get("inconsistent"):
-            marker = "  <-- inconsistent pin across files, see locations below"
-        elif version_key(latest_norm) != version_key(current):
-            new_sha = resolve_sha(repo, latest) or "COULD NOT RESOLVE"
-            marker = "  <-- update available"
+        if len(current_refs) > 1:
+            marker = "  <-- INCONSISTENT ref across files, see locations below"
+        else:
+            # Compare only the major component — the repo pins to a floating `vN`.
+            cur_major = version_key(current_refs[0])[:1]
+            latest_major = version_key(latest)[:1]
+            if latest_major > cur_major:
+                marker = f"  <-- MAJOR update available (review {repo} release notes first)"
 
-        print(f"{repo:<28} {info['comment']:<10} {latest:<10} {new_sha}{marker}")
+        print(f"{repo:<28} {current:<12} {latest:<12}{marker}")
         if marker:
-            for loc in info["locations"]:
-                print(f"    used in: {loc}")
+            for ref in current_refs:
+                for loc in used[ref]:
+                    print(f"    used in: {loc}")
 
 
 if __name__ == "__main__":

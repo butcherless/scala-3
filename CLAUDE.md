@@ -28,8 +28,6 @@ sbt xdup                    # dependencyUpdates
 sbt pills/stryker           # mutation testing
 ```
 
-`xstart`/`xstop` are broken: `sbt-revolver` isn't in `project/plugins.sbt`.
-
 ```
 ./mill __.compile
 ./mill pills.test + pills.zioTest + pills-int.test    # full run, matches sbt test

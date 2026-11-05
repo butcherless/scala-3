@@ -27,11 +27,11 @@ pair. Each row below is checked a different way:
 | SBT itself | `project/build.properties` | GitHub releases API |
 | Mill itself | `.mill-version` | GitHub releases API |
 | scalafmt formatter | `.scalafmt.conf` (`version =`) | GitHub releases API |
-| GitHub Actions | `.github/workflows/scala.yml` | see the note below — this repo does **not** SHA-pin |
+| GitHub Actions | `.github/workflows/*.yml`, `.github/actions/*/action.yml` | `scripts/check_actions_updates.py` (bundled here) — this repo does **not** SHA-pin |
 
 `xdup` only sees the sbt build's main dependencies, not `build.mill`'s `Versions` object,
 `plugins.sbt` (the sbt meta-build), `build.properties`, `.mill-version`, `.scalafmt.conf`, or
-`scala.yml` — all checks are needed for a full picture. `.scalafmt.conf`'s `version` pins the
+the files under `.github/` — all checks are needed for a full picture. `.scalafmt.conf`'s `version` pins the
 standalone scalafmt formatter, which is separate from the `sbt-scalafmt` plugin version in
 `plugins.sbt` — the two are checked independently and can be a version apart. If the user named
 one specific dependency, skip straight to its check instead of running all of them.
@@ -39,22 +39,20 @@ one specific dependency, skip straight to its check instead of running all of th
 Renovate only tracks the sbt side (see CLAUDE.md's "Build tool parity") — this skill is what keeps
 Mill, `.mill-version`, and GitHub Actions current.
 
-**GitHub Actions convention in this repo:** `.github/workflows/scala.yml` pins actions to
-**floating major-version tags** (`actions/checkout@v7`, `actions/setup-java@v5`,
-`sbt/setup-sbt@v1`), not commit SHAs. This is a deliberate difference from the SHA-pinning
+**GitHub Actions convention in this repo:** the workflows (`scala.yml`, `mutation-testing.yml`)
+and the `setup-jdk` composite action pin actions to **floating major-version tags**
+(`actions/checkout@v7`, `actions/setup-java@v6`, `sbt/setup-sbt@v1`), not commit SHAs. This is a deliberate difference from the SHA-pinning
 convention some other projects use — don't "upgrade" this repo to SHA pins as a side effect of a
 version-bump task; that's a separate, larger discussion about supply-chain hardening. Because the
 tags float, every patch/minor release under the current major is already picked up automatically
 with no file edit needed. The only actionable check is whether a **new major** exists:
 ```bash
-for r in actions/checkout actions/setup-java sbt/setup-sbt; do
-  echo "== $r =="
-  curl -s "https://api.github.com/repos/$r/releases/latest" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tag_name', d))"
-done
+python3 .claude/skills/bump-versions/scripts/check_actions_updates.py
 ```
-Compare the major component only against the pin in `scala.yml`. `scripts/check_actions_updates.py`
-is bundled here too (it assumes SHA-pinned refs) in case this repo ever switches conventions — as
-of now it will correctly report "No SHA-pinned GitHub Actions found" and that's not a bug.
+It scans every `uses: owner/repo@vN` in `.github/workflows/*.yml` and `.github/actions/*/action.yml`
+and reports the floating major tag against the latest release (via an authenticated `gh api`). An
+`<-- INCONSISTENT ref across files` marker means the same action is on different tags in
+different files — resolve that before treating it as a clean bump.
 
 ## Step 1 — Sync with the remote
 
@@ -81,7 +79,7 @@ sbt xdup
 ```
 Ignore any `org.scala-lang:scala3-library` line — that's the SBT meta-build's own Scala version,
 not this project's. The output also includes updates for excluded deps (e.g. ZIO Prelude
-`1.0.0-RC47 -> 1.0.0-RCxx`) — leave those alone; filtering is Step 3's job, not this one's.
+`1.0.0-RC48 -> 1.0.0-RCxx`) — leave those alone; filtering is Step 3's job, not this one's.
 
 If this fails with `Not a valid command: xdup`, the sbt server is stuck in the meta-build context
 from an earlier `reload plugins` command. Run `sbt shutdown` and retry.
@@ -111,23 +109,26 @@ policy and its own exception list (Step 3) — a plugin with no stable release p
 `no stable release` rather than guessing.
 
 **SBT itself, Mill itself, and the scalafmt formatter** are each a single pinned version read
-straight from GitHub's latest-release API (which already excludes pre-releases) — same shape, three
-files:
+from GitHub releases with `gh api` (authenticated, so no 60-requests/hour limit; never plain
+`curl https://api.github.com/...`). Pre-releases are excluded. **SBT is filtered to the 1.x
+line on purpose**: `sbt/sbt`'s `/releases/latest` now points at 2.x, and a 2.x jump is a
+deliberate migration, never a routine bump:
 ```bash
 grep sbt.version project/build.properties
-curl -s "https://api.github.com/repos/sbt/sbt/releases/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])"
+gh api 'repos/sbt/sbt/releases?per_page=30' \
+  --jq '[.[] | select(.prerelease | not) | .tag_name | select(startswith("v1."))] | first'
 
 cat .mill-version
-curl -s "https://api.github.com/repos/com-lihaoyi/mill/releases/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])"
+gh api repos/com-lihaoyi/mill/releases/latest --jq .tag_name
 
 grep "^version" .scalafmt.conf
-curl -s "https://api.github.com/repos/scalameta/scalafmt/releases/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])"
+gh api repos/scalameta/scalafmt/releases/latest --jq .tag_name
 ```
 Compare each pair. (The `.scalafmt.conf` value is the standalone formatter, not the `sbt-scalafmt`
 plugin checked above — see the intro table note on why those two can differ.)
 
-**GitHub Actions:** see the floating-tag note above — check major versions only, don't run the
-SHA-pin script expecting output.
+**GitHub Actions:** run `check_actions_updates.py` (see the floating-tag note above) — only a new
+major needs a manual bump.
 
 ## Step 3 — Apply the project's versioning policy
 
@@ -201,11 +202,12 @@ For each approved **SBT plugin**, **SBT itself**, **Mill itself**, or **scalafmt
 
 For an approved **GitHub Actions** major-version bump:
 
-1. Edit the tag in `.github/workflows/scala.yml` for every job that uses it (`grep -n "uses:"
-   .github/workflows/scala.yml` first to confirm every occurrence).
+1. Edit the tag in every file the script listed under "used in:" (`grep -rn "owner/repo@"
+   .github/` first to confirm every occurrence — workflows and the `setup-jdk` composite action).
 2. Verify: `sbt`/`mill` commands don't touch `.github/`, so they verify nothing about this bump.
    Instead confirm the YAML still parses:
-   `python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" .github/workflows/scala.yml`.
+   `ruby -ryaml -e 'ARGV.each { |f| YAML.safe_load(File.read(f)) }' .github/workflows/*.yml .github/actions/*/action.yml`
+   (macOS ships Ruby's YAML parser; PyYAML usually isn't installed).
    The only real confirmation that the new major behaves correctly is CI actually running it —
    flag this to the user as the one bump category that needs a post-push CI check, an intentional
    exception to CLAUDE.md's default of not monitoring CI unless asked.
