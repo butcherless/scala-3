@@ -42,7 +42,7 @@ sbt pills/stryker           # mutation testing
 
 ## CI
 
-`.github/workflows/scala.yml` runs the `scala3` (sbt) and `mill` jobs in parallel with the same steps. They share JDK setup through `.github/actions/setup-jdk`. Only the sbt job passes `cache: sbt`, since `setup-java` has no Mill preset.
+`.github/workflows/scala.yml` runs the `scala3` (sbt) and `mill` jobs in parallel with the same steps. They share JDK setup through `.github/actions/setup-jdk`. Only the sbt job passes `cache: sbt`, since `setup-java` has no Mill preset; the Mill job caches `~/.cache/coursier`, `~/.cache/mill` and `out/` with `actions/cache` instead.
 
 ## Build tool parity
 

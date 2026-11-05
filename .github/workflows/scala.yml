@@ -55,6 +55,20 @@ jobs:
         persist-credentials: false
     - name: Setup JDK
       uses: ./.github/actions/setup-jdk
+    - name: Cache Mill, Coursier and compiled output
+      # setup-java has no Mill cache preset, so without this every run re-downloads Mill and the
+      # dependencies and recompiles from scratch. out/ is keyed on the commit; restore-keys fall
+      # back to the latest state for the same build definition, then to any Mill cache.
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/.cache/coursier
+          ~/.cache/mill
+          out
+        key: ${{ runner.os }}-mill-${{ hashFiles('build.mill', '.mill-version') }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-mill-${{ hashFiles('build.mill', '.mill-version') }}-
+          ${{ runner.os }}-mill-
     - name: compile main
       run: ./mill __.compile
     - name: compile unit tests
