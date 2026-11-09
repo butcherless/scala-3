@@ -51,9 +51,13 @@ def latest_tag(repo: str) -> Optional[str]:
     release = gh_api(f"{repo}/releases/latest")
     if isinstance(release, dict) and "tag_name" in release:
         return release["tag_name"]
-    tags = gh_api(f"{repo}/tags")
-    if isinstance(tags, list) and tags:
-        return tags[0]["name"]
+    # No releases: fall back to the highest version-shaped tag. The tags API doesn't sort by
+    # version (`v9` can come before `v10`), so never take the first entry as-is.
+    tags = gh_api(f"{repo}/tags?per_page=100")
+    if isinstance(tags, list):
+        versions = [t["name"] for t in tags if re.fullmatch(r"v?\d+(\.\d+)*", t.get("name", ""))]
+        if versions:
+            return max(versions, key=version_key)
     return None
 
 
@@ -65,6 +69,8 @@ def find_refs(root: Path) -> dict:
     )
     for path in paths:
         for lineno, line in enumerate(path.read_text().splitlines(), start=1):
+            if line.lstrip().startswith("#"):
+                continue  # a commented-out `uses:` isn't a real reference
             m = USES_RE.search(line)
             if not m:
                 continue

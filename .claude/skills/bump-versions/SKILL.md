@@ -231,6 +231,18 @@ pinned plugins, and one regenerate at the end covers every bump in the run. Skip
 bumps were Mill-only (`.mill-version`), scalafmt, or GitHub Actions (nothing sbt-dependency-related
 changed).
 
+## Step 5c — Commit, then ask before pushing
+
+Commit each bump on its own once its verify gate has passed — one commit per bump, so a later
+revert or `git bisect` lands on exactly one version change. Commit on the current branch.
+Message shape: `chore: bump <dependency> to <version>`, with a body for anything the diff doesn't
+say on its own (a major bump's migration notes, fallout fixed alongside it, which verify layers
+ran). Stage only the files that bump touched; an unrelated problem the verify gate exposed gets its
+own commit.
+
+**Never push without asking.** Once the user says yes, push, and after the push don't watch CI
+unless they ask, with the one exception from Step 5: a GitHub Actions major bump needs its first CI run checked. A dependency bump must land in **both** builds (sbt and Mill) in the same commit — see CLAUDE.md's "Build tool parity".
+
 ## Step 6 — Report
 
 Cover both of these, not just the first:
