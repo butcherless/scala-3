@@ -1,0 +1,141 @@
+name: Dependency Updates
+
+# Report-only: lists what could be bumped in the step summary and never edits a file. Renovate
+# (renovate.json) only tracks the sbt side, so this is the only automated signal for Mill, the
+# Mill version, the Scala LTS rule and new GitHub Actions majors. Acting on it is the
+# `bump-versions` skill's job; see CLAUDE.md's "Versioning policy" and "Build tool parity".
+
+on:
+  schedule:
+    - cron: '0 15 * * 5'  # every Friday at 15:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+
+    env:
+      SBT_OPTS: "-Xmx2g"
+      GH_TOKEN: ${{ github.token }}   # for the `gh api` calls and the Actions check script
+
+    # An explicit `shell: bash` adds pipefail, which the default shell doesn't. Without it, the
+    # `| tee` in each step hides a failing check and the step still passes.
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Setup JDK
+        uses: ./.github/actions/setup-jdk
+        with:
+          cache: sbt
+      - name: Setup SBT
+        uses: sbt/setup-sbt@v1
+      - name: Report sbt library dependency updates
+        # `xdup` = sbt-updates' `dependencyUpdates`, run from the implicit root project, so it
+        # covers both `pills` and `pills-int`.
+        run: |
+          {
+            echo '## sbt library dependencies'
+            echo '```'
+            sbt -no-colors xdup
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Report Mill library dependency updates
+        # Mill's built-in update check (mill-build.org, "Searching For Dependency Updates"):
+        # level 0 is the build's own modules, `--meta-level 1` the meta-build, i.e. the plugins
+        # declared in build.mill's `//| mvnDeps` header. The two builds have no shared version
+        # source, so a difference between this and the sbt report means they've drifted.
+        run: |
+          {
+            echo '## Mill library dependencies'
+            echo '```'
+            ./mill --no-daemon mill.javalib.Dependency/showUpdates
+            echo '```'
+            echo '## Mill meta-build (plugins)'
+            echo '```'
+            ./mill --no-daemon --meta-level 1 mill.javalib.Dependency/showUpdates
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Report Scala LTS version
+        # Neither sbt-updates nor Mill tells an LTS from a mainline "Next" release, so take the
+        # highest LTS-named GitHub release (highest, not first: an older LTS line's patch can be
+        # listed first by date). Same query as the bump-versions skill.
+        run: |
+          scala_lts="$(gh api 'repos/scala/scala3/releases?per_page=100' --jq '[.[] | select(.prerelease | not) | select((.name // "") | test("LTS")) | .tag_name | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))] | max_by(split(".") | map(tonumber))')"
+          if [[ -z "$scala_lts" || "$scala_lts" == null ]]; then
+            echo "::error::No LTS release found in the last 100 scala/scala3 GitHub releases." >&2
+            exit 1
+          fi
+          {
+            echo '## Scala (LTS only)'
+            echo '```'
+            echo "sbt:  $(grep -E '^\s*val scala\b' project/Versions.scala)"
+            echo "Mill: $(grep -E '^\s*val scala\b' build.mill)"
+            echo "latest LTS: $scala_lts"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Report sbt plugin updates
+        run: |
+          {
+            echo '## sbt plugins'
+            echo '```'
+            python3 .claude/skills/bump-versions/scripts/check_plugin_updates.py
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Report sbt / Mill / scalafmt versions
+        # None of these is a dependency either build's update check sees. The sbt query stays on
+        # the 1.x line (sbt/sbt's /releases/latest now points at 2.x) and, like the Mill one, takes
+        # the highest stable x.y.z rather than the first listed, since a late patch on an older
+        # line comes first by date. Versions are fetched first because a failure inside
+        # `echo "$(...)"` wouldn't fail the step.
+        run: |
+          sbt_latest="$(gh api 'repos/sbt/sbt/releases?per_page=100' --jq '[.[] | select(.prerelease | not) | .tag_name | select(test("^v1\\.[0-9]+\\.[0-9]+$"))] | max_by(ltrimstr("v") | split(".") | map(tonumber))')"
+          mill_latest="$(gh api 'repos/com-lihaoyi/mill/releases?per_page=100' --jq '[.[] | select(.prerelease | not) | .tag_name | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))] | max_by(split(".") | map(tonumber))')"
+          scalafmt_latest="$(gh api repos/scalameta/scalafmt/releases/latest --jq .tag_name)"
+          for v in sbt_latest mill_latest; do
+            if [[ -z "${!v}" || "${!v}" == null ]]; then
+              echo "::error::No stable release found for ${v%_latest}; the query needs paging." >&2
+              exit 1
+            fi
+          done
+          {
+            echo '## sbt itself'
+            echo '```'
+            echo "current: $(grep sbt.version project/build.properties)"
+            echo "latest:  $sbt_latest"
+            echo '```'
+            echo '## Mill itself'
+            echo '```'
+            echo "current: $(cat .mill-version)"
+            echo "latest:  $mill_latest"
+            echo '```'
+            echo '## scalafmt formatter'
+            echo '```'
+            echo "current: $(grep '^version' .scalafmt.conf)"
+            echo "latest:  $scalafmt_latest"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Report GitHub Actions updates
+        # Covers .github/workflows/*.yml and .github/actions/*/action.yml (setup-jdk). Actions are
+        # pinned to floating major tags, so only a new major is flagged.
+        run: |
+          {
+            echo '## GitHub Actions'
+            echo '```'
+            python3 .claude/skills/bump-versions/scripts/check_actions_updates.py
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"

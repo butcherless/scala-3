@@ -48,6 +48,7 @@ sbt pills/stryker           # mutation testing
 
 - `project/Versions.scala`/`project/Dependencies.scala` and the `Versions` object in `build.mill` have no shared source. **When changing a dependency, the Scala version, scalac options or module structure, update both.**
 - Renovate only tracks the sbt side, so the `bump-versions` skill keeps Mill and `.mill-version` current.
+- `.github/workflows/dependency-updates.yml` reports both sides on Fridays at 15:00 UTC or on a manual trigger, and changes nothing: sbt and Mill library updates (plus Mill's meta-build plugins), the latest Scala LTS, sbt plugins, sbt/Mill/scalafmt versions and new GitHub Actions majors. A dependency that shows up on only one side means the two builds have drifted.
 - sbt's `assemblyMergeStrategy` uses `MergeStrategy.last` for some duplicate netty/module-info files. Mill has no such rule and uses `Rule.ExcludePattern`, which is equivalent for a runnable jar but not byte-identical.
 - Stryker4s is sbt-only. Mill's plugin can only wire one test module, so it can't cover both `pills.test` and `pills.zioTest`.
 
