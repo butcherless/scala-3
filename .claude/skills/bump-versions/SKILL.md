@@ -61,9 +61,12 @@ skill) may have already merged a bump, and re-proposing one that already landed 
 cycle.
 
 ```bash
-git status   # must be clean
+gh auth status   # must succeed — every GitHub check below depends on it
+git status       # must be clean
 git pull
 ```
+
+If `gh auth status` fails, **abort the skill** and tell the user to run `! gh auth login`.
 
 If `git status` shows local changes, **abort the skill** — don't pull or stash on the user's
 behalf. Tell them to commit or stash first; a version bump assumes a clean starting diff.
@@ -106,7 +109,12 @@ python3 .claude/skills/bump-versions/scripts/check_plugin_updates.py
 ```
 Reports current vs. latest per plugin in `project/plugins.sbt`. Already applies the stable-only
 policy and its own exception list (Step 3) — a plugin with no stable release prints
-`no stable release` rather than guessing.
+`no stable release` rather than guessing. It reads the artifact for *this build's* SBT major
+(`<artifact>_2.12_1.0` on SBT 1.x, `<artifact>_sbt2_3` on 2.x, picked from
+`project/build.properties`), so it never proposes a version only published for the other SBT line.
+A failed lookup prints `lookup failed` and exits non-zero (as does `check_actions_updates.py`,
+also when `gh` isn't logged in) — treat a non-zero exit as "this check didn't complete" and report
+it in Step 6, never as "up to date".
 
 **SBT itself, Mill itself, and the scalafmt formatter** are each a single pinned version read
 from GitHub releases with `gh api` (authenticated, so no 60-requests/hour limit; never plain
@@ -115,8 +123,8 @@ line on purpose**: `sbt/sbt`'s `/releases/latest` now points at 2.x, and a 2.x j
 deliberate migration, never a routine bump:
 ```bash
 grep sbt.version project/build.properties
-gh api 'repos/sbt/sbt/releases?per_page=30' \
-  --jq '[.[] | select(.prerelease | not) | .tag_name | select(startswith("v1."))] | first'
+gh api 'repos/sbt/sbt/releases?per_page=100' \
+  --jq '[.[] | select(.prerelease | not) | .tag_name | select(test("^v1\\.[0-9]+\\.[0-9]+$"))] | max_by(ltrimstr("v") | split(".") | map(tonumber))'
 
 cat .mill-version
 gh api repos/com-lihaoyi/mill/releases/latest --jq .tag_name
@@ -124,6 +132,11 @@ gh api repos/com-lihaoyi/mill/releases/latest --jq .tag_name
 grep "^version" .scalafmt.conf
 gh api repos/scalameta/scalafmt/releases/latest --jq .tag_name
 ```
+The SBT query takes the *highest* `v1.x.y`, not the first listed: a late patch on an older 1.x
+line (e.g. `1.12.16` after `1.13.1`) is listed first by date. If it prints nothing (`gh --jq`
+renders a `null` result as an empty line), the 2.x releases have pushed every 1.x one off the
+first 100 — add `&page=2` and re-run rather than reporting SBT as up to date.
+
 Compare each pair. (The `.scalafmt.conf` value is the standalone formatter, not the `sbt-scalafmt`
 plugin checked above — see the intro table note on why those two can differ.)
 
