@@ -200,6 +200,9 @@ For each approved **library dependency** bump:
    ./mill __.compile
    ./mill pills.test + pills.zioTest + pills-int.test
    ```
+   This repo is on sbt 1, where `test` runs the whole suite. If it ever moves to sbt 2, use
+   `testFull` instead: sbt 2's `test` is `testQuick`, its disk cache survives `clean`, and it can
+   report zero tests run as `[success]`.
 3. If both pass, move on to the next approved bump. If either fails, stop — don't layer further
    bumps on top of a broken one. Investigate before deciding whether to revert this one, fix the
    fallout, or tell the user it needs more review than expected.
